@@ -1,0 +1,28 @@
+# StickTo with accounts and notifications
+
+One Node server that serves the app and the API: sign up and log in, cloud sync, an admin view, a leaderboard and push notifications from "Tock".
+
+## Run it on your computer
+1. Install Node.js 18 or newer.
+2. In this folder run `npm install` and then `npm start`.
+3. Open http://localhost:3000. (Push needs https, so test it online.)
+
+## Put it online (Render, about 10 minutes)
+1. Upload this folder to a new GitHub repository.
+2. On render.com choose New, Web Service, and connect the repository.
+3. Build command: `npm install`. Start command: `npm start`.
+4. Add environment variables:
+   - `ADMIN_TOKEN` a long secret you choose. Open `/admin` on your site and enter it to see all users.
+   - `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` from running `npx web-push generate-vapid-keys` once.
+   - `CONTACT` as `mailto:you@example.com`.
+   - `DATA_DIR` as `/var/data`, and add a Disk mounted at `/var/data`. Without a disk, accounts are erased on every redeploy.
+5. Use an always-on plan. Free plans go to sleep, and a sleeping server cannot send notifications.
+
+## Notifications
+- Tock sends at most 2 a day, never between 22:00 and 07:00 in the user's time, and at least 90 minutes apart.
+- Daily reminder at the time each user picks, a streak alert at 21:00, and a comeback message after 2 or more quiet days.
+- After 5 ignored notifications in a row Tock stops until the user returns.
+- On iPhone, push only works after the app is added to the Home Screen.
+
+## Privacy
+Users agree at sign-up that the owner can see streak, XP and activity. Photos are never uploaded, passwords are stored hashed, and users can delete their account. If you have users in the EU, UK or India, add a privacy policy page.
