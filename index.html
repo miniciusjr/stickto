@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14213d">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>StickTo — timetables you actually follow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#14213d;--mute:#5f6b7f;--line:#d5dce6;--blue:#2f5bea;--green:#1f8f5f;--red:#d64545;--amber:#c98a0b;--box-sizing:border-box;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--card:#18223a;--ink:#e8edf7;--mute:#9aa7bf;--line:#2a3654;--blue:#6e90ff;--green:#43c58d;--red:#ff7b7b;--amber:#e8b44a}}
+:root[data-theme="dark"]{--bg:#0f1624;--card:#18223a;--ink:#e8edf7;--mute:#9aa7bf;--line:#2a3654;--blue:#6e90ff;--green:#43c58d;--red:#ff7b7b;--amber:#e8b44a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.45}
+main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.5rem;font-weight:800;margin:0}
+h2{font-size:1.05rem;margin:0 0 10px;font-weight:800}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sub{color:var(--mute);font-size:.9rem}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.now{border:2px solid var(--blue)}
+.now.idle{border:1px dashed var(--line)}
+.big{font-size:3rem;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;background:var(--blue);transition:width .5s}
+button{font:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+button.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+button.ok{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+button.ghost{border:none;color:var(--mute);padding:4px 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.slot{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.slot:first-of-type{border-top:none}
+.time{width:96px;color:var(--mute);font-variant-numeric:tabular-nums;font-size:.88rem;flex:none}
+.name{flex:1;min-width:0}
+.tag{font-size:.78rem;padding:2px 9px;border-radius:20px;border:1px solid currentColor;white-space:nowrap}
+.done{color:var(--green)}.missed{color:var(--red)}.skipped{color:var(--amber)}.active{color:var(--blue)}.up{color:var(--mute)}
+.slot.is-missed .name{text-decoration:line-through;text-decoration-color:var(--red)}
+input[type=text],input[type=time]{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+input[type=text]{flex:1;min-width:140px}
+.days label{display:inline-block}
+.days input{position:absolute;opacity:0}
+.days span{display:inline-block;width:34px;height:34px;line-height:32px;text-align:center;border:1px solid var(--line);border-radius:50%;cursor:pointer;font-size:.85rem}
+.days input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days input:focus-visible+span{outline:3px solid var(--blue)}
+.stats{display:flex;gap:18px;flex-wrap:wrap}
+.stat b{display:block;font-size:1.7rem;font-weight:800;line-height:1.1}
+.week{display:flex;gap:6px;align-items:flex-end;height:80px;margin-top:12px}
+.week div{flex:1;text-align:center;font-size:.72rem;color:var(--mute)}
+.week i{display:block;background:var(--blue);border-radius:4px 4px 0 0;min-height:3px;margin-bottom:3px}
+.msg{padding:10px 12px;border-radius:10px;background:var(--bg);font-size:.92rem;margin-top:10px}
+.warn{color:var(--red)}
+.lvl{display:flex;align-items:baseline;gap:10px}.lvl b{font-size:1.7rem;font-weight:800}
+button:disabled{opacity:.5;cursor:not-allowed}
+.ifrow{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:.92rem}
+.opt{display:block;width:100%;text-align:left;padding:14px 16px;margin:8px 0;font-size:1rem;border-radius:12px}
+.opt:hover,.chip:hover{border-color:var(--blue)}
+.opt.sel,.chip.sel{border-color:var(--blue);background:var(--blue);color:#fff}
+.chip{border-radius:20px;padding:8px 16px}
+select,input[type=number]{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+details{font-size:.9rem}summary{cursor:pointer;color:var(--mute)}details p{margin:8px 0}
+#lock{position:fixed;inset:0;z-index:100;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;padding:calc(24px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));overflow:auto}
+#lock[hidden]{display:none}
+.lk{width:100%;max-width:480px;text-align:center}
+.lh{font-size:1.5rem;margin:6px 0 14px}
+.lsub{opacity:.75;font-size:.92rem}
+.lbar{height:8px;background:rgba(128,128,128,.35);border-radius:6px;overflow:hidden;margin:16px 0}
+.lbar i{display:block;height:100%;background:var(--bg);transition:width .5s}
+.ltile{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;margin:8px 0;border:1px solid currentColor;border-radius:12px;text-align:left}
+.lnote{margin:14px 0;padding:12px;border-radius:12px;background:rgba(128,128,128,.28);text-align:left}
+#lock button{background:transparent;color:inherit;border:1px solid currentColor;padding:9px 16px}
+#lock button.go{background:var(--bg);color:var(--ink);border-color:var(--bg);font-weight:600;padding:12px 22px;font-size:1.05rem}
+#lock button.lghost{border:none;opacity:.75;margin-top:24px}
+#lock button:disabled{opacity:.4;cursor:not-allowed}
+#lock input{background:transparent;color:inherit;border:1px solid currentColor;margin:8px 0;width:100%}
+#lock .big{font-size:4.5rem}
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 14px;font-weight:600;color:var(--mute);white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+.fixed{color:var(--mute)}
+.remb{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:90;background:var(--card);color:var(--ink);border:2px solid var(--red);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.remb[hidden],.toast[hidden]{display:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:120;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;max-width:90%;text-align:center}
+#proof{position:fixed;inset:0;z-index:110;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px 20px;overflow:auto}
+#proof[hidden]{display:none}
+#proof button,#proof .abtn{background:transparent;color:inherit;border:1px solid currentColor;padding:9px 16px;border-radius:9px;text-decoration:none;font:inherit;cursor:pointer}
+#proof .go{background:var(--bg);color:var(--ink);border-color:var(--bg);font-weight:600;padding:12px 22px}
+#proof button.lghost{border:none;opacity:.75;margin-top:24px}
+#proof input[type=text]{background:transparent;color:inherit;border:1px solid currentColor;width:100%;margin:12px 0}
+#proof .warn{color:inherit;font-weight:600}
+input[type=email],input[type=password]{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+.tock{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:95;max-width:640px;margin:0 auto;background:var(--card);color:var(--ink);border:2px solid var(--blue);border-radius:16px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.28);display:flex;gap:12px;align-items:flex-start}
+.tock[hidden]{display:none}
+.tk-hl{outline:3px solid var(--blue);outline-offset:4px;border-radius:14px;scroll-margin-top:16px;animation:tkp 1.4s ease-in-out infinite}
+@keyframes tkp{50%{outline-color:transparent}}
+@media (prefers-reduced-motion:reduce){.tk-hl{animation:none}}
+</style>
+</head>
+<body>
+<div id="lock" hidden></div>
+<div id="proof" hidden></div>
+<div id="tock" class="tock" role="dialog" aria-label="Guide from Tock" hidden></div>
+<div id="remB" class="remb" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<main>
+<header>
+  <div><h1>StickTo</h1><div class="sub" id="today"></div></div>
+  <div class="row"><button id="tourbtn">Guide</button><button id="install" hidden>Install app</button><button id="notif">Turn on alerts</button><button id="sample">Load sample day</button></div>
+</header>
+<nav class="tabs" role="tablist"><button role="tab" id="tb-plan" aria-selected="true" onclick="showTab('plan')">Plan</button><button role="tab" id="tb-rem" aria-selected="false" onclick="showTab('rem')">Reminders</button><button role="tab" id="tb-goals" aria-selected="false" onclick="showTab('goals')">Goals and rewards</button><button role="tab" id="tb-safe" aria-selected="false" onclick="showTab('safe')">Safeguards</button></nav>
+<div id="tab-plan">
+
+<div class="grid">
+  <div>
+    <section class="card" id="gstart" hidden></section>
+    <section class="card now idle" id="now" aria-live="polite"></section>
+    <section class="card" id="focuscard">
+      <h2>Focus lock</h2>
+      <p class="sub" style="margin-top:0">Starts a full-screen session. Leaving without opening an allowed app adds 2 minutes and costs 10 XP. The session survives a refresh.</p>
+      <div class="row" style="margin-bottom:10px"><input type="text" id="ftitle" placeholder="What are you focusing on?" aria-label="Focus task"><select id="ftask" aria-label="Pick a task"></select></div>
+      <div class="row" style="margin-bottom:10px"><button class="chip" onclick="$('fdur').value=25">25</button><button class="chip" onclick="$('fdur').value=50">50</button><button class="chip" onclick="$('fdur').value=90">90</button><input type="number" id="fdur" value="25" min="1" max="240" style="width:80px" aria-label="Minutes"><span class="sub">minutes</span></div>
+      <h2 style="font-size:.95rem;margin-top:14px">Allowed apps</h2>
+      <p class="sub" style="margin-top:0">Everything not on this list is off limits during a session. Each allowed app has a daily time limit.</p>
+      <div id="applist"></div>
+      <div class="row" style="margin-top:8px"><input type="text" id="appn" placeholder="App name, e.g. Notes" aria-label="App name"><input type="number" id="appl" value="10" min="1" max="240" style="width:80px" aria-label="Daily limit in minutes"><span class="sub">min/day</span><button id="appadd">Allow</button></div>
+      <label class="row" style="margin-top:12px"><input type="checkbox" id="fnudge"><span>Full-screen nudge when a timetable block starts</span></label>
+      <div class="row" style="margin-top:12px"><button class="pri" id="fstart">Start focus session</button><span class="sub warn" id="ferr"></span></div>
+      <details style="margin-top:12px"><summary>Make it unavoidable on your phone or computer</summary>
+        <p>A web page can't close or block other apps by itself. It can detect when you leave, track allowed-app time and make leaving costly. For a hard block, use your device's own tools with the same allowed list:</p>
+        <p><b>iPhone:</b> Settings, Focus, choose Allowed Apps; Screen Time, App Limits.<br><b>Android:</b> Settings, Digital Wellbeing, Focus mode and App timers.<br><b>Windows or Mac:</b> a blocker such as Cold Turkey or Freedom, or the macOS Focus feature.</p>
+      </details>
+    </section>
+    <section class="card" id="planner">
+      <h2>Task planner</h2>
+      <p class="sub" style="margin-top:0">Dump your tasks. The AI orders them and fits them into the free time left today.</p>
+      <div class="row" style="margin-bottom:8px"><input type="text" id="tt" placeholder="Task, e.g. Finish chemistry assignment" aria-label="Task"><input type="number" id="tm" value="30" min="5" max="240" style="width:80px" aria-label="Minutes needed"><span class="sub">min</span></div>
+      <div class="row"><select id="td" aria-label="Deadline"><option value="today">Due today</option><option value="week" selected>This week</option><option value="none">No deadline</option></select><select id="ti" aria-label="Importance"><option value="high">High importance</option><option value="med" selected>Medium importance</option><option value="low">Low importance</option></select><button id="tadd">Add task</button></div>
+      <div id="tlist" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:10px"><button class="pri" id="trun">Prioritize with AI</button></div>
+      <div id="tplan"></div>
+    </section>
+    <section class="card" id="survey"></section>
+    <section class="card">
+      <h2>Today's timetable</h2>
+      <div id="slots"></div>
+    </section>
+    <section class="card">
+      <h2>Add a block</h2>
+      <div class="row" style="margin-bottom:10px">
+        <input type="text" id="title" placeholder="What will you do? e.g. Physics practice" aria-label="Task name">
+        <input type="time" id="start" value="09:00" aria-label="Start time">
+        <input type="time" id="end" value="10:00" aria-label="End time">
+      </div>
+      <div class="row days" id="days"></div>
+      <div class="row" style="margin-top:12px"><button class="pri" id="add">Add block</button><span class="sub" id="err"></span></div>
+    </section>
+  </div>
+  <div>
+    <section class="card">
+      <h2>Your track record</h2>
+      <div class="stats">
+        <div class="stat"><b id="streak">0</b><span class="sub">day streak</span></div>
+        <div class="stat"><b id="score">0%</b><span class="sub">done today</span></div>
+        <div class="stat"><b id="away">0</b><span class="sub">tab exits today</span></div>
+        <div class="stat"><b id="fmin">0</b><span class="sub">focus min today</span></div>
+      </div>
+      <div class="week" id="week" aria-label="Last 7 days completion"></div>
+      <div class="msg" id="coach"></div>
+    </section>
+    <section class="card">
+      <h2>My commitment</h2>
+      <p class="sub" style="margin-top:0">Write what you promise yourself. It shows up whenever you skip or miss a block.</p>
+      <input type="text" id="pledge" placeholder="If I skip, I will..." style="width:100%" aria-label="Commitment">
+    </section>
+    <section class="card">
+      <h2>Self-control gym</h2>
+      <div class="lvl"><b id="lvl">1</b><span class="sub" id="lvlsub"></span></div>
+      <div class="bar"><i id="xpbar" style="width:0"></i></div>
+      <div id="urge" style="margin:14px 0"></div>
+      <h2 style="font-size:.95rem">If-then plans</h2>
+      <p class="sub" style="margin-top:0">Decide in advance what you'll do when temptation hits.</p>
+      <div class="row"><input type="text" id="ifin" placeholder="When I reach for my phone, I will..." aria-label="If-then plan"><button id="ifadd">Add</button></div>
+      <div id="iflist"></div>
+    </section>
+    <section class="card">
+      <h2>All blocks</h2>
+      <div id="all"></div>
+    </section>
+  </div>
+</div></div>
+<div id="tab-rem" hidden>
+  <div class="card"><h2>Stop-procrastinating list</h2>
+    <p class="sub" style="margin-top:0">You can hold only 3 tasks here at a time. A short list is one you'll actually finish. The app keeps reminding you until you start or finish each one.</p>
+    <div class="bar"><i id="remcap" style="width:0"></i></div><div class="sub" id="remslots"></div>
+    <div class="row" style="margin-top:12px"><input type="text" id="rt" placeholder="What are you putting off?" aria-label="Task you are putting off"><input type="time" id="ra" value="09:00" aria-label="Remind me from"><select id="re" aria-label="Repeat"><option value="15">Every 15 min</option><option value="30" selected>Every 30 min</option><option value="60">Every hour</option></select><button class="pri" id="radd">Add</button></div>
+    <div class="sub warn" id="rerr" style="margin-top:6px"></div>
+    <div id="rlist" style="margin-top:8px"></div>
+  </div>
+</div>
+<div id="tab-goals" hidden>
+  <div class="grid">
+    <div>
+      <section class="card"><h2>Your rank</h2><div id="gRank"></div><div class="row" id="gBadges" style="margin-top:12px"></div>
+        <p class="sub" style="margin-bottom:0">Earn coins: 5 per block done, 3 per urge resisted, 1 per 5 focus minutes, 10 per procrastination task finished, 50 per goal reached.</p></section>
+      <section class="card"><h2>Weekly review</h2><div id="weekly"></div></section>
+      <section class="card"><h2>Long-term goals</h2>
+        <div class="row" style="margin-bottom:8px"><input type="text" id="gt" placeholder="Goal, e.g. Score 90% in board exams" aria-label="Goal"><input type="date" id="gd" aria-label="Target date" style="padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit"></div>
+        <div class="row" style="margin-bottom:8px"><input type="text" id="gs" placeholder="Milestones, separated by commas" aria-label="Milestones"></div>
+        <div class="row"><input type="text" id="gr" placeholder="Reward when you reach it" aria-label="Reward"><button class="pri" id="gadd">Add goal</button></div>
+        <div class="sub warn" id="gerr" style="margin-top:6px"></div>
+        <div id="glist"></div>
+      </section>
+    </div>
+    <div>
+      <section class="card"><h2>Reward shop</h2>
+        <p class="sub" style="margin-top:0">Spend coins on rewards you set for yourself.</p>
+        <div class="row" style="margin-bottom:8px"><input type="text" id="rwt" placeholder="Reward, e.g. Watch an episode" aria-label="Reward name"><input type="number" id="rwc" value="30" min="1" max="5000" style="width:84px" aria-label="Cost in coins"><button id="radd2">Add</button></div>
+        <div id="shop"></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div id="tab-safe" hidden>
+  <div class="grid">
+    <div>
+      <section class="card"><h2>Proof of completion</h2>
+        <p class="sub" style="margin-top:0">Pick what you must show before a block, reminder or goal counts as done. Sessions finished on the focus timer need no proof. Photos must be live, and a photo can't be used twice.</p>
+        <select id="pfmode" aria-label="Proof required"><option value="off">No proof needed</option><option value="photo">Live photo required</option><option value="partner">Partner approval required</option><option value="either">Photo or partner approval</option></select>
+        <div class="row" id="pfgal" style="margin-top:12px"></div>
+      </section>
+      <section class="card"><h2>My accountability partner</h2>
+        <p class="sub" style="margin-top:0">The partner approves by email or SMS. Their approval is cryptographically signed, so you can't fake it or reuse it.</p>
+        <div class="row" style="margin-bottom:8px"><input type="text" id="pn" placeholder="Name" aria-label="Partner name"><input type="text" id="pe" placeholder="Email" aria-label="Partner email"><input type="text" id="pp" placeholder="Phone, e.g. +911234567890" aria-label="Partner phone"></div>
+        <input type="text" id="pc" placeholder="Paste their pairing code (starts with SKP.)" aria-label="Pairing code" style="width:100%;margin-bottom:8px">
+        <div class="row"><button class="pri" id="psave">Save partner</button><span class="sub" id="pst"></span></div>
+      </section>
+    </div>
+    <div>
+      <section class="card" id="acc"><h2>Account and notifications</h2>
+        <div id="accOff" class="sub">Accounts, sync and push notifications need the StickTo server. The README explains how to deploy it.</div>
+        <div id="accIn" hidden>
+          <p class="sub" style="margin-top:0">Sign up to sync across devices and get Tock's reminders.</p>
+          <input type="text" id="an" placeholder="Name (for sign up)" aria-label="Name" style="width:100%;margin-bottom:8px">
+          <input type="email" id="ae" placeholder="Email" aria-label="Email" style="width:100%;margin-bottom:8px">
+          <input type="password" id="ap" placeholder="Password (8+ characters)" aria-label="Password" style="width:100%;margin-bottom:8px">
+          <label class="row" style="margin-bottom:8px"><input type="checkbox" id="ac"><span class="sub">I agree that the app owner can see my streak, XP and activity. My photos and private notes are never uploaded.</span></label>
+          <div class="row"><button class="pri" id="asu">Sign up</button><button id="ali">Log in</button></div><div class="sub warn" id="aerr" style="margin-top:6px"></div>
+        </div>
+        <div id="accOn" hidden>
+          <div id="ahi" style="margin-bottom:10px"></div>
+          <div class="row" style="margin-bottom:8px"><button class="pri" id="apush">Turn on notifications</button><label class="sub">Remind me at <input type="time" id="art" value="19:00"></label></div>
+          <label class="row" style="margin-bottom:8px"><input type="checkbox" id="abd"><span class="sub">Show my first name on the leaderboard</span></label>
+          <div class="row"><button id="asy">Sync now</button><button id="alo">Log out</button><button class="ghost" id="ade">Delete account</button></div>
+          <div class="sub" id="asm" style="margin-top:6px"></div>
+          <div id="board"></div>
+        </div>
+      </section>
+      <section class="card"><h2>I'm the approver</h2>
+        <p class="sub" style="margin-top:0">Your friend or parent uses this on their own device. Create a key once and send the pairing code to the person you're supporting. Then paste each request here.</p>
+        <button id="apk" onclick="apKey()">Create my approver key</button>
+        <input type="text" id="appub" readonly placeholder="Your pairing code appears here" onfocus="this.select()" aria-label="My pairing code" style="width:100%;margin:8px 0">
+        <textarea id="apreq" rows="3" placeholder="Paste the request you received" aria-label="Request" style="width:100%;font:inherit;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></textarea>
+        <div class="row" style="margin:8px 0"><button onclick="apReview()">Review request</button></div><div id="apinfo"></div>
+      </section>
+      <section class="card"><h2>Backup and device</h2>
+        <p class="sub" style="margin-top:0">Your data lives on this device. Export it to move to another one or to keep a copy.</p>
+        <div class="row"><button id="bkx">Export backup</button><label class="sub">Import: <input type="file" id="bki" accept="application/json"></label></div>
+        <p class="sub">To install: on Android or PC use the Install button at the top. On iPhone, tap Share, then Add to Home Screen.</p>
+      </section>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let S={blocks:[],log:{},away:{},pledge:'',urges:{},ifthen:[],tasks:[],apps:[],appUse:{},fl:{},focus:{min:0,viol:0,broken:0},session:null,nudge:true,rem:[],remDone:0,goals:[],rewards:[],spent:0,goalsDone:0,proof:'off',partner:{name:'',email:'',phone:'',pub:''},proofs:[],nonces:[],tourSeen:false,gdone:false};
+try{const r=localStorage.getItem('stickto');if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+var _rp=(k,v)=>k==='updatedAt'||k==='seen'||k==='sv'||k==='hid'?undefined:(v&&typeof v==='object'&&!Array.isArray(v)&&!Object.keys(v).length?undefined:v),_last=JSON.stringify(S,_rp);
+const save=()=>{const j=JSON.stringify(S,_rp);if(j!==_last){_last=j;S.updatedAt=Date.now();if(typeof syncSoon==='function')syncSoon()}try{localStorage.setItem('stickto',JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const m=t=>{const[a,b]=t.split(':');return +a*60+ +b};
+const f=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+const key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let skipStart=0,urgeOn=false,urgeEnd=0,skipping=null,notified={},ac=null;
+
+// day picker
+$('days').innerHTML=DN.map((d,i)=>`<label><input type="checkbox" value="${i}" checked><span>${d[0]}</span></label>`).join('');
+
+function status(b,k,nowM){
+  if(b.fixed)return'fixed';
+  const l=(S.log[k]||{})[b.id];
+  if(l)return l.s;
+  if(nowM>=m(b.end))return'missed';
+  if(nowM>=m(b.start))return'active';
+  return'up';
+}
+const forDay=d=>S.blocks.filter(b=>b.date?b.date===key(d):b.days.includes(d.getDay())).sort((a,b)=>m(a.start)-m(b.start));
+function rate(d,nowM){
+  const k=key(d),bl=forDay(d).filter(b=>!b.fixed);if(!bl.length)return null;
+  return bl.filter(b=>((S.log[k]||{})[b.id]||{}).s==='done').length/bl.length;
+}
+function beep(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=660;g.gain.setValueAtTime(.15,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.6);o.start();o.stop(ac.currentTime+.6)}catch(e){}}
+function ping(t,body){beep();try{if(window.Notification&&Notification.permission==='granted'){if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>r.showNotification(t,{body,icon:'icon-192.png'}));else new Notification(t,{body})}}catch(e){}}
+
+function render(){
+  const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),k=key(now),sec=now.getSeconds();
+  $('today').textContent=now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+  const bl=forDay(now);
+  S.log[k]=S.log[k]||{};
+
+  // reminders
+  bl.forEach(b=>{
+    if(b.fixed)return;
+    const sM=m(b.start),eM=m(b.end);
+    const k1=k+b.id+'s',k2=k+b.id+'e';
+    if(nowM===sM&&!notified[k1]&&!S.log[k][b.id]){notified[k1]=1;ping('Time to start: '+b.title,b.start+' – '+b.end)}
+    if(nowM===eM-5&&eM-sM>10&&!notified[k2]&&!S.log[k][b.id]){notified[k2]=1;ping('5 minutes left: '+b.title,'Finish and mark it done.')}
+  });
+
+  // now panel
+  const act=bl.find(b=>status(b,k,nowM)==='active');
+  const nowEl=$('now');
+  if(act){
+    const total=(m(act.end)-m(act.start))*60,left=m(act.end)*60-(nowM*60+sec),pct=Math.min(100,Math.max(0,(total-left)/total*100));
+    const mm=Math.floor(left/60),ss=left%60;
+    nowEl.className='card now';
+    document.title=`${mm}:${String(ss).padStart(2,'0')} · ${act.title}`;
+    if(skipping===act.id){
+      nowEl.innerHTML=`<div class="sub">Skipping</div><h2>${esc(act.title)}</h2>
+      ${S.pledge?`<div class="msg warn">Your commitment: ${esc(S.pledge)}</div>`:''}
+      <div class="sub" style="margin-top:10px">Skipping unlocks after a 30-second pause. Use it to ask: is this a real reason or just an urge?</div>
+      <div class="row" style="margin-top:12px"><input type="text" id="why" placeholder="Honest reason for skipping" aria-label="Reason"><button class="pri" id="skipbtn" disabled onclick="skipIt('${act.id}')">Wait 30s…</button><button onclick="skipping=null;render()">Go back</button></div>`;
+    }else{
+      nowEl.innerHTML=`<div class="sub">Now · ${act.start}–${act.end}</div><h2 style="font-size:1.4rem;margin:4px 0 8px">${esc(act.title)}</h2>
+      <div class="big">${mm}:${String(ss).padStart(2,'0')}</div><div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="row"><button class="ok" onclick="mark('${act.id}','done')">Mark done</button><button class="ghost" onclick="skipping='${act.id}';skipStart=Date.now();render()">Skip…</button></div>`;
+    }
+  }else{
+    document.title='StickTo — timetables you actually follow';
+    const nxt=bl.find(b=>status(b,k,nowM)==='up');
+    nowEl.className='card now idle';
+    nowEl.innerHTML=nxt?`<div class="sub">Next up</div><h2 style="font-size:1.3rem;margin:4px 0">${esc(nxt.title)}</h2><div class="sub">Starts at ${nxt.start} · in ${m(nxt.start)-nowM} min</div>`
+      :`<div class="sub">${bl.length?'All blocks for today are finished.':'Nothing scheduled today.'}</div><div>${bl.length?'Check your score on the right.':'Add a block below to get started.'}</div>`;
+  }
+
+  // slots
+  $('slots').innerHTML=bl.length?bl.map(b=>{
+    const st=status(b,k,nowM),l=S.log[k][b.id],lab={done:'Done',missed:'Missed',skipped:'Skipped',active:'Now',up:'Upcoming',fixed:'Fixed'}[st];
+    return`<div class="slot ${st==='missed'?'is-missed':''}"><div class="time">${b.start}–${b.end}</div><div class="name">${esc(b.title)}${l&&l.why?`<div class="sub">“${esc(l.why)}”</div>`:''}</div><span class="tag ${st}">${lab}</span></div>`}).join(''):'<div class="sub">No blocks for today yet.</div>';
+
+  // all blocks
+  $('all').innerHTML=S.blocks.length?S.blocks.map(b=>`<div class="slot"><div class="name">${esc(b.title)}<div class="sub">${b.fixed?'Fixed · ':b.area?'Focus area · ':''}${b.start}–${b.end} · ${b.date?'One-off':b.days.length===7?'Every day':b.days.map(d=>DN[d]).join(', ')}</div></div><button class="ghost" onclick="editBlock('${b.id}')">Edit</button><button class="ghost" onclick="del('${b.id}')" aria-label="Delete ${esc(b.title)}">Delete</button></div>`).join(''):'<div class="sub">Nothing yet.</div>';
+
+  // stats
+  const r=rate(now,nowM);
+  $('score').textContent=r===null?'–':Math.round(r*100)+'%';
+  $('away').textContent=S.away[k]||0;
+  let streak=0;
+  for(let i=0;i<365;i++){const d=new Date(now);d.setDate(d.getDate()-i);const x=rate(d,nowM);
+    if(x===null)continue;
+    if(x>=.8)streak++;else if(i>0)break;}
+  $('streak').textContent=streak;
+  let wk='';
+  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const x=rate(d,nowM);
+    wk+=`<div><i style="height:${x===null?3:Math.max(3,x*60)}px;opacity:${x===null?.3:1}"></i>${DN[d.getDay()][0]}</div>`}
+  $('week').innerHTML=wk;
+  const missed=bl.filter(b=>status(b,k,nowM)==='missed').length;
+  $('coach').innerHTML=!bl.length?'Add your first block. Small and specific beats big and vague.'
+    :missed>=2?`<span class="warn">${missed} blocks missed today.</span> ${S.pledge?esc(S.pledge):'Pick the next block and start it right now.'}`
+    :r===1?'Perfect day. Same time tomorrow.':r>=.8?'On track. Keep the streak alive.':'Every block you mark done counts toward your streak. You need 80% to keep it.';
+  renderSC();save();
+}
+
+function mark(id,s,why){if(s==='done'&&S.proof!=='off'){const b=S.blocks.find(x=>x.id===id);return needProof(b?b.title:'This block',()=>markNow(id,s,why))}markNow(id,s,why)}
+function markNow(id,s,why){const k=key(new Date());S.log[k]=S.log[k]||{};S.log[k][id]={s,why};skipping=null;if(s==='done'){S.lastActive=Date.now();toast('Block done: +10 XP, +5 coins')}render()}
+function skipIt(id){if(Date.now()-skipStart<30000)return;const w=$('why').value.trim();if(!w){$('why').placeholder='A reason is required. Be honest.';$('why').focus();return}mark(id,'skipped',w)}
+function del(id){S.blocks=S.blocks.filter(b=>b.id!==id);render()}
+
+$('add').onclick=()=>{
+  const t=$('title').value.trim(),s=$('start').value,e=$('end').value,
+    d=[...document.querySelectorAll('#days input:checked')].map(x=>+x.value);
+  const err=$('err');
+  if(!t)return err.textContent='Give the block a name.';
+  if(!s||!e||m(e)<=m(s))return err.textContent='End time must be after start time.';
+  if(!d.length)return err.textContent='Pick at least one day.';
+  const clash=S.blocks.find(b=>b.id!==editId&&!b.date&&b.days.some(x=>d.includes(x))&&m(s)<m(b.end)&&m(e)>m(b.start));
+  if(clash)return err.textContent=`Overlaps with “${clash.title}” (${clash.start}–${clash.end}).`;
+  err.textContent='';
+  const old=S.blocks.find(b=>b.id===editId);if(old)S.blocks=S.blocks.filter(b=>b!==old);S.blocks.push({id:old?old.id:'b'+Date.now(),title:t,start:s,end:e,days:d,...(old&&old.fixed?{fixed:true}:{}),...(old&&old.area?{area:true}:{})});editId=null;$('add').textContent='Add block';
+  $('title').value='';render();
+};
+$('pledge').value=S.pledge||'';
+$('pledge').oninput=e=>{S.pledge=e.target.value;save()};
+$('sample').onclick=()=>{
+  const all=[0,1,2,3,4,5,6],wk=[1,2,3,4,5];
+  [['Wake up, stretch, no phone','06:30','07:00',all],['Deep work: main goal','09:00','11:00',wk],['Lunch + walk','13:00','14:00',all],['Study / skill practice','16:00','17:30',wk],['Plan tomorrow','21:30','21:45',all]]
+  .forEach((x,i)=>S.blocks.push({id:'s'+Date.now()+i,title:x[0],start:x[1],end:x[2],days:x[3]}));render();
+};
+$('notif').onclick=()=>{
+  beep();
+  try{Notification.requestPermission().then(p=>{$('notif').textContent=p==='granted'?'Reminders on':'Sound only (alerts blocked)'})}
+  catch(e){$('notif').textContent='Sound reminders on'}
+};
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)return;
+  const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),k=key(now);
+  if(forDay(now).some(b=>status(b,k,nowM)==='active')){S.away[k]=(S.away[k]||0)+1;save()}
+});
+
+function startUrge(){urgeOn=true;urgeEnd=Date.now()+180000;renderSC();liveBits()}
+function endUrge(ok){if(ok){S.lastActive=Date.now();const k=key(new Date());S.urges[k]=(S.urges[k]||0)+1}urgeOn=false;render()}
+function renderSC(){
+  let done=0,res=0;
+  Object.values(S.log).forEach(d=>Object.values(d).forEach(x=>{if(x&&x.s==='done')done++}));
+  Object.values(S.urges).forEach(n=>res+=n);
+  const xp=Math.max(0,done*10+res*5+(S.focus.min||0)-(S.focus.viol||0)*10-(S.focus.broken||0)*15+(S.remDone||0)*15+(S.goalsDone||0)*100),lv=Math.floor(Math.sqrt(xp/20))+1,lo=20*(lv-1)*(lv-1),hi=20*lv*lv;
+  $('lvl').textContent='Lv '+lv+' · '+rankOf(lv);$('fmin').textContent=S.fl[key(new Date())]||0;
+  $('lvlsub').textContent=xp+' XP · '+(hi-xp)+' to next level';
+  $('xpbar').style.width=((xp-lo)/(hi-lo)*100)+'%';
+  const k=key(new Date());
+  $('urge').innerHTML=urgeOn
+    ?`<div class="sub">Ride the urge out. It rises, peaks, and fades.</div><div class="big" id="urgeT" style="font-size:2.2rem;margin:6px 0"></div><div id="urgeB" style="margin-bottom:10px"></div><div class="row"><button class="ok" id="urgeOk" disabled onclick="endUrge(true)">I rode it out (+5 XP)</button><button class="ghost" onclick="endUrge(false)">Cancel</button></div>`
+    :`<button class="pri" onclick="startUrge()">I feel the urge to quit or scroll</button><div class="sub" style="margin-top:6px">Urges resisted today: ${S.urges[k]||0} · total ${res}</div>`;
+  $('iflist').innerHTML=S.ifthen.map((t,i)=>`<div class="ifrow"><span>${esc(t)}</span><button class="ghost" onclick="S.ifthen.splice(${i},1);renderSC();save()" aria-label="Remove plan">✕</button></div>`).join('');
+}
+function liveBits(){
+  if(urgeOn&&$('urgeT')){
+    const left=Math.max(0,Math.ceil((urgeEnd-Date.now())/1000)),e=180-left;
+    $('urgeT').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+    const c=e%12;$('urgeB').textContent=left?(c<4?'Breathe in…':c<8?'Hold…':'Breathe out…'):'The urge has had its time. Did it pass?';
+    $('urgeOk').disabled=left>0;
+  }
+  const b=$('skipbtn');
+  if(b){const w=30-Math.floor((Date.now()-skipStart)/1000);b.disabled=w>0;b.textContent=w>0?'Wait '+w+'s…':'Skip block'}
+}
+$('ifadd').onclick=()=>{const v=$('ifin').value.trim();if(!v)return;S.ifthen.push(v);$('ifin').value='';renderSC();save()};
+setInterval(()=>{const a=document.activeElement;if(a&&a.type==='text')liveBits();else{render();liveBits()}},1000);
+render();
+
+/* ---------- Know-yourself survey + check-in ---------- */
+const QS=[
+{k:'peak',multi:true,q:"When do you feel sharpest?",h:"When thinking feels easiest, not when you're forced to work.",o:[['Early morning','morning'],['Late morning to midday','midday'],['Afternoon','afternoon'],['Evening or night','night']]},
+{k:'sleep',q:"How many hours do you usually sleep?",h:"Be honest. It shapes your evening plan.",o:[['Under 6','short'],['6 to 7','mid'],['7 to 8','good'],['More than 8','long']]},
+{k:'focus',q:"How long can you focus before your mind drifts?",h:"On something that matters but isn't thrilling.",o:[['About 15 minutes','15'],['About 25 minutes','25'],['About 45 minutes','45'],['An hour or more','60']]},
+{k:'trig',multi:true,q:"What pulls you off task most?",o:[['My phone or social media','phone'],['The task is boring or hard','hard'],['Noise or people around me','noise'],['My own thoughts and worries','mind']]},
+{k:'proc',multi:true,q:"When you put something off, why?",o:[['It feels too big','big'],["I'm not in the mood",'mood'],['I want it perfect first','perf'],['Nothing feels urgent','urg']]},
+{k:'mot',multi:true,q:"What gets you moving best?",o:[['A deadline','dead'],['A reward','rew'],['Seeing progress','prog'],['Someone expecting it of me','acc']]},
+{k:'dip',multi:true,q:"When does your energy usually crash?",o:[['After lunch','lunch'],['Late afternoon','late'],['In the evening','eve'],['Randomly, when stressed','rand']]},
+{k:'str',multi:true,q:"When you're stressed, you tend to...",o:[['Freeze or avoid things','freeze'],['Scroll or snack','scroll'],['Overwork and skip breaks','over'],['Get restless and fidgety','rest']]},
+{k:'brk',multi:true,q:"What resets you best?",o:[['A short walk','take a short walk'],['Music','listen to one favourite song'],['Talking to someone','message or talk to a friend'],['Quiet time','sit quietly and breathe for 2 minutes']]}
+];
+const TRG={phone:"When I feel like checking my phone, I will move it to another room and take 3 slow breaths.",hard:"When the task feels boring or hard, I will work on it for just 5 minutes, then decide whether to continue.",noise:"When noise or people pull me away, I will put on headphones or move somewhere quieter.",mind:"When a worry pops up, I will write it on a 'later' list and go back to the task."};
+const PRC={big:"When a task feels too big, I will write its first 2-minute step and do only that.",mood:"When I'm not in the mood, I will start anyway for 2 minutes. Motivation usually follows action.",perf:"When I catch myself polishing, I will set a timer and finish a rough version first.",urg:"When nothing feels urgent, I will give the task a mini-deadline within the next hour."};
+const STR={freeze:"When I want to avoid something, I will do the smallest possible next action.",scroll:"When I want to scroll or snack to cope, I will start the urge timer and wait it out.",over:"When a block ends, I will stop and take my reset, even if I'm on a roll.",rest:"When I feel restless, I will stand up and walk for 3 minutes before deciding what to do."};
+const MOT={dead:"At the start of every block, I will set a mini-deadline for what I'll finish.",rew:"After each block I finish, I will give myself a small reward.",prog:"After each block, I will check my streak and XP before moving on.",acc:"Each morning, I will tell a friend what I plan to finish today."};
+let svMode='home',svI=0,svA={},chk={e:null,m:null},chkOut=null;
+S.survey=S.survey||null;S.checks=S.checks||{};
+const qsel=k=>{const a=S.survey.a[k];return(Array.isArray(a)?a:[a]).slice().sort((x,y)=>x-y)};
+const qvs=k=>{const q=QS.find(x=>x.k===k);return qsel(k).map(i=>q.o[i][1])};
+const qls=k=>{const q=QS.find(x=>x.k===k);return qsel(k).map(i=>q.o[i][0])};
+const qv=k=>qvs(k)[0];
+const ql=k=>qls(k).join(', ');
+const brkTxt=()=>qvs('brk').join(' or ');
+const clash=b=>S.blocks.find(x=>!x.date&&x.days.some(d=>b.days.includes(d))&&m(b.start)<m(x.end)&&m(b.end)>m(x.start));
+function windows(){
+  const PK={morning:540,midday:690,afternoon:900,night:1200},DP={lunch:840,late:990,eve:1170,rand:930};
+  const dur={15:30,25:50,45:75,60:90}[qv('focus')];
+  const peaks=qvs('peak').map(v=>({v,pS:PK[v],pE:PK[v]+dur}));
+  const dips=qvs('dip').map(v=>{let dS=DP[v];peaks.forEach(p=>{if(dS<p.pE&&dS+15>p.pS)dS=p.pE});return{v,dS,dE:dS+15}});
+  return{pS:peaks[0].pS,pE:peaks[0].pE,dS:dips[0].dS,dE:dips[0].dE,dur,peaks,dips};
+}
+function plan(){
+  const w=windows(),pv=qvs('peak'),night=pv.every(v=>v==='night'),bed=qv('sleep')==='short'?1320:pv.includes('night')?1410:1380,wake=night?480:420,fixed=[];
+  if(qvs('trig').includes('phone'))fixed.push({title:'Wake-up routine, phone stays away',start:f(wake),end:f(wake+30),days:[0,1,2,3,4,5,6],why:'Phone-first mornings drain focus before the day starts.'});
+  const pl=qls('peak'),dl=qls('dip');
+  w.peaks.forEach((p,i)=>fixed.push({title:i?'Deep work: second task':'Deep work: hardest task',start:f(p.pS),end:f(p.pE),days:[1,2,3,4,5],why:`You're sharpest in the ${pl[i].toLowerCase()}, and you focus for about ${w.dur} minutes at a stretch.`}));
+  w.dips.forEach((d,i)=>fixed.push({title:'Reset: '+qls('brk')[0].toLowerCase()+(w.dips.length>1?' ('+dl[i].toLowerCase()+')':''),start:f(d.dS),end:f(d.dE),days:[0,1,2,3,4,5,6],why:'Your energy tends to dip around now. A planned reset beats a forced slump.'}));
+  fixed.push({title:'Plan tomorrow',start:f(bed-45),end:f(bed-30),days:[0,1,2,3,4,5,6],why:'Ten minutes tonight removes decisions tomorrow morning.'});
+  fixed.push({title:'Wind down, no screens',start:f(bed-30),end:f(bed),days:[0,1,2,3,4,5,6],why:qv('sleep')==='short'?"You're running on short sleep, so this is set earlier to protect it.":'A calm last half hour helps you fall asleep and wake sharper.'});
+  const dyn=[...qvs('trig').map(v=>TRG[v]),...qvs('proc').map(v=>PRC[v]),...qvs('str').map(v=>STR[v]),...qvs('mot').map(v=>MOT[v]),...w.dips.map(d=>`When my energy dips around ${f(d.dS)}, I will ${brkTxt()}.`)];
+  const fx=fixed.map(b=>{if(S.blocks.some(x=>x.title===b.title))return{...b,added:true};const r=fitBlock(b);return r?{...r,why:b.why+(r.start!==b.start?' Moved to fit around your fixed events.':''),added:false}:{...b,added:false,nofit:true}});
+  return{fixed:fx,dyn,w};
+}
+function addSug(i){const b=plan().fixed[i];if(b.added||b.nofit)return;const r=fitBlock(b);if(!r)return;S.blocks.push({id:'p'+Date.now()+i,title:r.title,start:r.start,end:r.end,days:r.days});render();renderSV()}
+function addAllSug(){plan().fixed.forEach((b,i)=>{if(b.added||b.nofit)return;const r=fitBlock(b);if(r)S.blocks.push({id:'p'+Date.now()+i,title:r.title,start:r.start,end:r.end,days:r.days})});render();renderSV()}
+function addIf(i){const t=plan().dyn[i];if(!S.ifthen.includes(t))S.ifthen.push(t);renderSC();save();renderSV()}
+function addAllIf(){plan().dyn.forEach(t=>{if(!S.ifthen.includes(t))S.ifthen.push(t)});renderSC();save();renderSV()}
+function pick(i){
+  const q=QS[svI];
+  if(q.multi){const a=Array.isArray(svA[q.k])?svA[q.k]:[],j=a.indexOf(i);if(j<0)a.push(i);else a.splice(j,1);svA[q.k]=a;renderSV();return}
+  svA[q.k]=i;svNext();
+}
+function svNext(){
+  const q=QS[svI];if(q.multi&&!(svA[q.k]||[]).length)return;
+  if(svI<QS.length-1)svI++;
+  else{const a={};Object.keys(svA).forEach(k=>{a[k]=Array.isArray(svA[k])?svA[k].slice().sort((x,y)=>x-y):svA[k]});S.survey={a};save();wz={stage:'fxpick',sel:[],i:0};wzV=null;wzErr='';wzNote='';svMode='wz'}
+  renderSV();
+}
+function startQuiz(){svMode='quiz';svI=0;svA={};renderSV()}
+function setChk(k,v){chk[k]=v;renderSV()}
+function doCheck(){
+  const now=new Date(),n=now.getHours()*60+now.getMinutes(),k=key(now);
+  (S.checks[k]=S.checks[k]||[]).push({t:n,e:chk.e,m:chk.m});save();
+  const L=[];
+  if(S.survey){
+    const w=windows();
+    const pk=w.peaks.find(p=>n>=p.pS&&n<p.pE);
+    if(pk)L.push(`You're inside your peak window (${f(pk.pS)} to ${f(pk.pE)}). Use it for your hardest task.`);
+    else if(w.dips.some(d=>n>=d.dS-30&&n<d.dE+30))L.push(`This is your usual energy-dip time. Plan to ${brkTxt()}.`);
+    else{const nx=w.peaks.find(p=>p.pS>n);L.push(`Your next peak window is ${nx?'today':'tomorrow'} at ${f((nx||w.peaks[0]).pS)}.`)}
+    if(chk.e==='low')L.push(`Low energy: ${brkTxt()} for 10 minutes, then start with your easiest block and shorten the next one to ${Math.max(15,Math.round(w.dur/2))} minutes.`);
+    if(chk.e==='high'&&!w.peaks.some(p=>n>=p.pS&&n<p.pE))L.push('High energy outside your peak: good moment to start something you have been avoiding.');
+    if(chk.m==='stressed')L.push(qvs('str').slice(0,2).map(x=>STR[x]).join(' '));
+    if(chk.m==='distracted')L.push(qvs('trig').slice(0,2).map(x=>TRG[x]).join(' '));
+    if(chk.m==='unmotivated')L.push(qvs('proc').slice(0,2).map(x=>PRC[x]).join(' '));
+    if(chk.m==='calm'&&chk.e!=='low')L.push('Calm and steady: a good state for focused work. Start the next block now.');
+  }else{
+    if(chk.e==='low')L.push('Low energy: take a 10-minute reset, then start with your easiest block.');
+    if(chk.m==='stressed')L.push('Stressed: use the urge timer in the Self-control gym and breathe slowly.');
+    if(chk.m==='distracted')L.push('Distracted: put your phone out of reach and work for just 5 minutes.');
+    if(chk.m==='unmotivated')L.push('Unmotivated: start a 2-minute version of the task. Starting is the hard part.');
+    L.push('Take the survey to get advice based on your own patterns.');
+  }
+  chkOut=L;renderSV();
+}
+const chip=(k,v,l)=>`<button class="chip${chk[k]===v?' sel':''}" onclick="setChk('${k}','${v}')">${l}</button>`;
+function renderSV(){
+  const el=$('survey');let h='';
+  if(svMode==='wz'){h=wzHtml()}
+  else if(svMode==='quiz'){
+    const q=QS[svI];
+    h=`<div class="row" style="justify-content:space-between"><span class="sub">Question ${svI+1} of ${QS.length}</span><button class="ghost" onclick="svMode='home';renderSV()">Close</button></div>
+    <div class="bar"><i style="width:${svI/QS.length*100}%"></i></div>
+    <h2 style="font-size:1.25rem;margin-bottom:4px">${q.q}</h2><div class="sub" style="margin-bottom:8px">${q.h?q.h+' ':''}${q.multi?'Choose all that apply.':''}</div>
+    ${q.o.map((o,i)=>{const on=q.multi?(svA[q.k]||[]).includes(i):svA[q.k]===i;return`<button class="opt${on?' sel':''}" aria-pressed="${on}" onclick="pick(${i})">${on&&q.multi?'✓ ':''}${o[0]}</button>`}).join('')}
+    ${q.multi?`<div class="row" style="margin-top:6px"><button class="pri" ${(svA[q.k]||[]).length?'':'disabled'} onclick="svNext()">${svI<QS.length-1?'Continue':'Finish'}</button></div>`:''}
+    ${svI?'<button class="ghost" onclick="svI--;renderSV()">Back</button>':''}`;
+  }else if(svMode==='result'&&S.survey){
+    const p=plan();
+    h=`<div class="row" style="justify-content:space-between"><h2 style="margin:0">Your daily plan, built from your answers</h2><button class="ghost" onclick="svMode='home';renderSV()">Close</button></div>
+    <h2 style="font-size:.95rem;margin-top:14px">Fixed events for your timetable</h2>
+    ${p.fixed.map((b,i)=>`<div class="slot"><div class="time">${b.start}–${b.end}</div><div class="name">${esc(b.title)}<div class="sub">${esc(b.why)}</div></div>${b.added?'<span class="tag done">Added</span>':b.nofit?'<span class="tag up">No free slot</span>':`<button onclick="addSug(${i})">Add</button>`}</div>`).join('')}
+    <div style="margin:8px 0 14px"><button class="pri" onclick="addAllSug()">Add all to my timetable</button></div>
+    <h2 style="font-size:.95rem">Dynamic events: what to do when things happen</h2>
+    ${p.dyn.map((t,i)=>`<div class="slot"><div class="name">${esc(t)}</div>${S.ifthen.includes(t)?'<span class="tag done">Saved</span>':`<button onclick="addIf(${i})">Save</button>`}</div>`).join('')}
+    <div style="margin-top:8px"><button class="pri" onclick="addAllIf()">Save all as if-then plans</button></div>`;
+  }else if(svMode==='check'){
+    h=`<div class="row" style="justify-content:space-between"><h2 style="margin:0">Quick check-in</h2><button class="ghost" onclick="svMode='home';chkOut=null;renderSV()">Close</button></div>
+    <div class="sub" style="margin:8px 0 4px">Energy right now</div><div class="row">${chip('e','low','Low')}${chip('e','ok','Okay')}${chip('e','high','High')}</div>
+    <div class="sub" style="margin:12px 0 4px">How do you feel?</div><div class="row">${chip('m','calm','Calm')}${chip('m','stressed','Stressed')}${chip('m','distracted','Distracted')}${chip('m','unmotivated','Unmotivated')}</div>
+    <div style="margin-top:12px"><button class="pri" ${chk.e&&chk.m?'':'disabled'} onclick="doCheck()">Get advice for right now</button></div>
+    ${chkOut?`<div class="msg">${chkOut.map(x=>`<div style="margin:4px 0">${esc(x)}</div>`).join('')}</div>`:''}`;
+  }else if(!S.survey){
+    h=`<h2 style="font-size:1.2rem">Know your patterns first</h2><p class="sub" style="margin-top:0">Answer 9 quick questions about how you focus, get distracted and recover. You'll get a day plan fitted to you, plus a ready response for when things go off track.</p><button class="pri" onclick="startQuiz()">Start the 2-minute survey</button>`;
+  }else{
+    const n=(S.checks[key(new Date())]||[]).length;
+    h=`<h2>Your profile</h2><div class="row" style="margin-bottom:12px"><span class="tag active">Sharpest: ${ql('peak')}</span><span class="tag active">Focus: ${ql('focus')}</span><span class="tag active">Trigger: ${ql('trig')}</span><span class="tag active">Reset: ${ql('brk')}</span></div>
+    <div class="row"><button class="pri" onclick="chk={e:null,m:null};chkOut=null;svMode='check';renderSV()">Check in now</button><button onclick="svMode='result';renderSV()">My daily plan</button><button onclick="wzStart('fxpick')">Fixed events</button><button onclick="wzStart('arpick')">Focus areas</button><button class="ghost" onclick="startQuiz()">Retake survey</button></div>
+    <div class="sub" style="margin-top:8px">Check-ins today: ${n}</div>`;
+  }
+  el.innerHTML=h;
+}
+renderSV();
+
+/* ---------- Focus lock, allowed apps, AI task planner ---------- */
+let AI=null,fcSig='',fcEnding=false,fcEndT=0,lastRes=null,wl=null,nudgeS={},nudgeBlk=null,tplan=null;
+const fmtS=s=>{s=Math.round(s);return s>=60?Math.floor(s/60)+' min '+(s%60)+' s':s+' s'};
+const mmss=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const appUsed=n=>((S.appUse[key(new Date())]||{})[n]||0);
+const appLeft=a=>Math.max(0,a.limit*60-appUsed(a.name));
+const nk=b=>key(new Date())+b.id;
+
+/* allowed apps */
+function renderApps(){
+  $('applist').innerHTML=S.apps.length?S.apps.map((a,i)=>`<div class="ifrow"><span>${esc(a.name)}<span class="sub"> · used ${Math.round(appUsed(a.name)/60)} of </span><input type="number" min="1" max="240" value="${a.limit}" style="width:64px;padding:4px 6px" aria-label="Daily limit for ${esc(a.name)}" onchange="S.apps[${i}].limit=Math.max(1,Math.min(240,+this.value||10));save()"><span class="sub"> min today</span></span><button class="ghost" onclick="S.apps.splice(${i},1);renderApps();save()" aria-label="Remove ${esc(a.name)}">✕</button></div>`).join(''):'<div class="sub">No apps allowed. During a session everything else is off limits.</div>';
+}
+$('appadd').onclick=()=>{const n=$('appn').value.trim().slice(0,30),l=Math.max(1,Math.min(240,+$('appl').value||10));if(!n||S.apps.some(a=>a.name.toLowerCase()===n.toLowerCase()))return;S.apps.push({name:n,limit:l});$('appn').value='';renderApps();save()};
+
+/* session engine */
+function startFocus(title,mins,extra){
+  mins=Math.max(1,Math.min(240,Math.round(mins)));
+  S.session=Object.assign({title:title||'Focus session',start:Date.now(),end:Date.now()+mins*60000,planned:mins,viol:0,app:null,appSince:0,hid:0,notice:''},extra||{});
+  fcEnding=false;lastRes=null;nudgeBlk=null;save();
+  try{const p=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>{})}catch(e){}
+  try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(x=>wl=x).catch(()=>{})}catch(e){}
+  fcSig='';focusTick();
+}
+function fcStart(){
+  const t=$('ftitle').value.trim()||'Focus session',d=+$('fdur').value;
+  if(!(d>=1&&d<=240)){$('ferr').textContent='Pick 1 to 240 minutes.';return}
+  $('ferr').textContent='';startFocus(t,d,{taskId:$('ftask').value||undefined});
+}
+function fcViolate(msg){const s=S.session;if(!s)return;s.viol++;s.end+=120000;S.focus.viol++;s.notice=msg+' 2 minutes added, -10 XP.';save();fcSig='';renderSC()}
+function fcLeave(){const s=S.session;if(s&&!s.hid)s.hid=Date.now()}
+function fcBack(){const s=S.session;if(!s||!s.hid)return;const d=Date.now()-s.hid;s.hid=0;if(!s.app&&d>5000)fcViolate('You were away for '+fmtS(d/1000)+' without using an allowed app.');else save()}
+function openApp(i){const s=S.session,a=S.apps[i];if(!s||s.app||!a||appLeft(a)<=0)return;s.app=a.name;s.appSince=Date.now();s.hid=0;save();fcSig=''}
+function stopApp(){
+  const s=S.session;if(!s||!s.app)return;
+  const a=S.apps.find(x=>x.name===s.app),el=(Date.now()-s.appSince)/1000,k=key(new Date());
+  S.appUse[k]=S.appUse[k]||{};const left=a?appLeft(a):el;
+  S.appUse[k][s.app]=appUsed(s.app)+Math.min(el,left);
+  const over=el-left,nm=s.app;s.app=null;s.appSince=0;s.hid=0;
+  if(over>5)fcViolate('You stayed in '+nm+' '+fmtS(over)+' past its limit.');
+  save();fcSig='';renderApps();fcRender();
+}
+function fcFinish(){
+  const s=S.session;if(s.app)stopApp();
+  const k=key(new Date());S.focus.min+=s.planned;S.lastActive=Date.now();S.fl[k]=(S.fl[k]||0)+s.planned;
+  if(s.blockId)markNow(s.blockId,'done');
+  lastRes={title:s.title,min:s.planned,viol:s.viol,taskId:s.taskId};S.session=null;
+  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
+  try{wl&&wl.release()}catch(e){}
+  ping('Focus session complete',s.planned+' minutes on '+s.title);
+  save();fcSig='';render();
+}
+function fcAbandon(){
+  const s=S.session;if(!s)return;if(s.app)stopApp();
+  S.focus.broken++;S.session=null;fcEnding=false;
+  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
+  try{wl&&wl.release()}catch(e){}
+  save();fcSig='';render();
+}
+function tkFinish(id,done){if(id.startsWith('rem:')){if(done)remDoneNow(id.slice(4));lastRes=null;fcSig='';fcRender();return}const t=S.tasks.find(x=>x.id===id);if(done&&t)t.done=true;lastRes=null;fcSig='';tplan=null;renderTasks();save();fcRender()}
+
+/* block-start nudge */
+function fcNudgeCheck(){
+  nudgeBlk=null;
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes(),k=key(now);
+  const b=forDay(now).find(x=>status(x,k,nm)==='active'&&skipping!==x.id);
+  if(!b)return;
+  const st=nudgeS[nk(b)]||{count:0,until:0,off:false};
+  if(st.off||Date.now()<st.until)return;
+  nudgeBlk=b;
+}
+function nudgeStart(){const b=nudgeBlk,now=new Date(),nm=now.getHours()*60+now.getMinutes();nudgeS[nk(b)]={off:true};nudgeBlk=null;startFocus(b.title,Math.max(5,m(b.end)-nm),{blockId:b.id})}
+function nudgeSnooze(){const b=nudgeBlk,st=nudgeS[nk(b)]||{count:0};nudgeS[nk(b)]={count:st.count+1,until:Date.now()+300000};nudgeBlk=null;fcSig='';fcRender()}
+function nudgeSkip(){const b=nudgeBlk;nudgeS[nk(b)]={off:true};nudgeBlk=null;skipping=b.id;skipStart=Date.now();fcSig='';fcRender();render()}
+
+/* lock screen */
+function fcLive(){
+  const s=S.session;if(!s)return;
+  const set=(id,t)=>{const e=$(id);if(e)e.textContent=t};
+  set('lkT',mmss(s.end-Date.now()));
+  const b=$('lkB');if(b)b.style.width=Math.min(100,(Date.now()-s.start)/(s.end-s.start)*100)+'%';
+  set('lkV',s.viol?s.viol+' time'+(s.viol>1?'s':'')+' off task this session':'Stay on this screen. Nothing else needs you right now.');
+  S.apps.forEach((a,i)=>set('lkA'+i,Math.floor(appLeft(a)/60)+' min left today'));
+  if(s.app){const a=S.apps.find(x=>x.name===s.app);if(a)set('lkAU',mmss(Math.max(0,appLeft(a)*1000-(Date.now()-s.appSince))))}
+  const e=$('lkE');if(e)e.disabled=!(Date.now()-fcEndT>=30000&&$('lkP').value.trim().toLowerCase()==='i am giving up');
+}
+function fcRender(){
+  const L=$('lock'),s=S.session;let sig='';
+  if(s)sig='run|'+s.app+'|'+fcEnding+'|'+s.notice+'|'+S.apps.map(a=>appLeft(a)>0?1:0).join('');
+  else if(lastRes)sig='res|'+lastRes.title+lastRes.min;
+  else if(nudgeBlk)sig='nudge|'+nudgeBlk.id+'|'+((nudgeS[nk(nudgeBlk)]||{}).count||0);
+  else{if(!L.hidden){L.hidden=true;L.innerHTML='';document.body.style.overflow='';fcSig=''}return}
+  L.hidden=false;document.body.style.overflow='hidden';
+  if(sig!==fcSig){
+    fcSig=sig;
+    if(s){
+      L.innerHTML=`<div class="lk"><div class="lsub">Focus session</div><h2 class="lh">${esc(s.title)}</h2>
+      <div class="big" id="lkT"></div><div class="lbar"><i id="lkB"></i></div><div class="lsub" id="lkV"></div>
+      ${s.notice?`<div class="lnote">${esc(s.notice)} <button onclick="S.session.notice='';fcSig='';save();fcRender()">OK</button></div>`:''}
+      ${s.app?`<div class="lnote">Using <b>${esc(s.app)}</b>: <span id="lkAU"></span> left. Come back and tap the button when you're done.</div><button class="go" onclick="stopApp()">Back to focus</button>`
+      :`<div class="lsub" style="margin-top:18px">Allowed apps</div>${S.apps.length?S.apps.map((x,i)=>`<div class="ltile"><span>${esc(x.name)} <span class="lsub" id="lkA${i}"></span></span><button ${appLeft(x)>0?'':'disabled'} onclick="openApp(${i})">Open</button></div>`).join(''):'<div class="lsub">None. Everything else is blocked.</div>'}`}
+      ${fcEnding?`<div class="lnote">To end early, wait 30 seconds, then type <b>I am giving up</b>.<input type="text" id="lkP" autocomplete="off" aria-label="Type the phrase" oninput="fcLive()"><button id="lkE" disabled onclick="fcAbandon()">End session</button> <button onclick="fcEnding=false;fcSig='';fcRender()">Keep going</button></div>`:`<button class="lghost" onclick="fcEnding=true;fcEndT=Date.now();fcSig='';fcRender()">End early</button>`}</div>`;
+    }else if(lastRes){
+      L.innerHTML=`<div class="lk"><div class="lsub">Session complete</div><h2 class="lh">${esc(lastRes.title)}</h2><p>${lastRes.min} minutes focused${lastRes.viol?', '+lastRes.viol+' slip'+(lastRes.viol>1?'s':'')+' (-'+lastRes.viol*10+' XP)':', no slips'}. +${lastRes.min} XP.</p>
+      ${lastRes.taskId?`<div class="row" style="justify-content:center"><button class="go" onclick="tkFinish('${lastRes.taskId}',true)">Task finished</button><button onclick="tkFinish('${lastRes.taskId}',false)">Needs more time</button></div>`:`<button class="go" onclick="lastRes=null;fcSig='';fcRender()">Close</button>`}</div>`;
+    }else{
+      const b=nudgeBlk,c=(nudgeS[nk(b)]||{}).count||0;
+      L.innerHTML=`<div class="lk"><div class="lsub">${b.start}–${b.end}</div><h2 class="lh">Time to start: ${esc(b.title)}</h2><p class="lsub">You planned this. Start now and the rest of the day gets easier.</p>
+      <div class="row" style="justify-content:center;margin-top:16px"><button class="go" onclick="nudgeStart()">Start focus now</button>${c<2?`<button onclick="nudgeSnooze()">Remind me in 5 min (${2-c} left)</button>`:''}</div>
+      <button class="lghost" onclick="nudgeSkip()">Skip this block…</button></div>`;
+    }
+  }
+  if(s)fcLive();
+}
+function focusTick(){
+  const s=S.session,now=Date.now();
+  if(s){
+    s.seen=now;if(now-(s.sv||0)>10000){s.sv=now;save()}
+    if(s.app){const a=S.apps.find(x=>x.name===s.app);if(!a||appUsed(a.name)+(now-s.appSince)/1000>=a.limit*60)stopApp()}
+    if(S.session&&now>=S.session.end&&!S.session.hid)fcFinish();
+  }else if(S.nudge)fcNudgeCheck();else nudgeBlk=null;
+  fcRender();
+}
+
+/* task planner */
+function renderTasks(){
+  const open=S.tasks.filter(t=>!t.done);
+  $('ftask').innerHTML='<option value="">Pick a task (optional)</option>'+open.map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('');
+  $('tlist').innerHTML=S.tasks.length?S.tasks.map(t=>`<div class="slot"><input type="checkbox" ${t.done?'checked':''} onchange="tkToggle('${t.id}')" aria-label="Done: ${esc(t.title)}"><div class="name" style="${t.done?'text-decoration:line-through;color:var(--mute)':''}">${esc(t.title)}<div class="sub">${t.mins} min · ${{today:'Due today',week:'This week',none:'No deadline'}[t.due]} · ${{high:'High',med:'Medium',low:'Low'}[t.imp]} importance</div></div><button class="ghost" onclick="tkDel('${t.id}')" aria-label="Delete task">✕</button></div>`).join(''):'<div class="sub">No tasks yet. Add everything on your mind.</div>';
+  let h='';
+  if(tplan){
+    if(tplan.loading)h='<div class="msg">Thinking through your day…</div>';
+    else if(tplan.msg)h=`<div class="msg">${esc(tplan.msg)}</div>`;
+    else h=`<h2 style="font-size:.95rem;margin-top:14px">Your order for today${tplan.src==='ai'?'':' <span class="sub">(built-in ranking)</span>'}</h2>`
+      +tplan.items.map((o,i)=>{const t=S.tasks.find(x=>x.id===o.id);return`<div class="slot"><div class="time">${o.unplaced?'No room today':o.start+'–'+o.end}</div><div class="name">${i+1}. ${esc(t?t.title:'')}<div class="sub">${esc(o.why||'')}</div></div></div>`}).join('')
+      +(tplan.advice?`<div class="msg">${esc(tplan.advice)}</div>`:'')
+      +(tplan.items.some(o=>!o.unplaced)?`<div style="margin-top:10px"><button class="pri" ${tplan.done?'disabled':''} onclick="tkSchedule()">${tplan.done?'Added to timetable':'Add to today’s timetable'}</button></div>`:'');
+  }
+  $('tplan').innerHTML=h;
+}
+function tkToggle(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;if(!t.done&&S.proof!=='off'){renderTasks();return needProof(t.title,()=>{t.done=true;tplan=null;renderTasks();save()})}t.done=!t.done;tplan=null;renderTasks();save()}
+function tkDel(id){S.tasks=S.tasks.filter(x=>x.id!==id);tplan=null;renderTasks();save()}
+$('tadd').onclick=()=>{const t=$('tt').value.trim();if(!t)return;S.tasks.push({id:'t'+Date.now(),title:t.slice(0,120),mins:Math.max(5,Math.min(240,+$('tm').value||30)),due:$('td').value,imp:$('ti').value,done:false});$('tt').value='';tplan=null;renderTasks();save()};
+function gaps(){
+  const now=new Date(),end=1320,g=[];let cur=Math.ceil((now.getHours()*60+now.getMinutes()+1)/5)*5;
+  for(const b of forDay(now)){const bs=m(b.start),be=m(b.end);if(be<=cur)continue;if(bs-cur>=15)g.push([cur,Math.min(bs,end)]);cur=Math.max(cur,be)}
+  if(end-cur>=15)g.push([cur,end]);return g;
+}
+function gapTake(g,s,e){const i=g.findIndex(x=>s>=x[0]&&e<=x[1]);if(i<0)return false;const[a,b]=g[i],out=[];if(s-a>=15)out.push([a,s]);if(b-(e+5)>=15)out.push([e+5,b]);g.splice(i,1,...out);return true}
+function tkPlace(order){
+  const g=gaps(),res=[];
+  for(const o of order){
+    const mins=Math.min(o.minutes,120);let st=o.start&&/^\d{1,2}:\d{2}$/.test(o.start)?m(o.start):-1,ok=false;
+    if(st>=0&&gapTake(g,st,st+mins))ok=true;
+    else for(const x of g){if(x[1]-x[0]>=mins){st=x[0];ok=gapTake(g,st,st+mins);break}}
+    res.push(ok?{...o,mins,start:f(st),end:f(st+mins)}:{...o,mins,unplaced:true});
+  }
+  return res;
+}
+async function tkRun(){
+  const open=S.tasks.filter(t=>!t.done);
+  if(!open.length){tplan={msg:'Add at least one task first.'};return renderTasks()}
+  tplan={loading:true};renderTasks();
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes();
+  let order=null,advice='',src='local';
+  if(AI){
+    try{
+      const g=gaps().map(x=>f(x[0])+'-'+f(x[1])).join(', ')||'none';
+      let prof='';
+      if(S.survey){const w=windows();prof=`Peak focus window: ${f(w.pS)}-${f(w.pE)}. Focus span: ${ql('focus')}. Procrastinates because: ${ql('proc')}. Main distraction: ${ql('trig')}. Motivated by: ${ql('mot')}.`}
+      const prompt=`You are a time-management coach inside a timetable app. Prioritize the user's tasks for the rest of today.\nNow: ${f(nm)}. Free windows today: ${g}.\n${prof}\nTasks: ${JSON.stringify(open.map(t=>({id:t.id,title:t.title,minutes:t.mins,due:t.due,importance:t.imp})))}\nRules: urgent and important first; the hardest or most important task goes in the peak window if it is free; each task must fit inside one free window; you may shorten minutes (5 to 120); include every task id exactly once; tasks that cannot fit today go last. "why" is at most 14 words. "advice" is at most 2 sentences of time-management advice for this specific day.\nReturn ONLY JSON: {"order":[{"id":"","why":"","minutes":0,"start":"HH:MM"}],"advice":""}`;
+      const r=await AI(prompt,{modelTier:'quick',cache:false});
+      const tx=r.text||'',j=JSON.parse(tx.slice(tx.indexOf('{'),tx.lastIndexOf('}')+1));
+      if(Array.isArray(j.order)){
+        order=[];
+        j.order.forEach(o=>{const t=open.find(x=>x.id===o.id);if(t&&!order.some(z=>z.id===t.id))order.push({id:t.id,why:String(o.why||'').slice(0,140),minutes:Math.max(5,Math.min(120,Math.round(+o.minutes)||t.mins)),start:o.start})});
+        open.forEach(t=>{if(!order.some(z=>z.id===t.id))order.push({id:t.id,why:'',minutes:Math.min(120,t.mins)})});
+        advice=String(j.advice||'').slice(0,300);src='ai';
+      }
+    }catch(e){order=null;advice=e&&e.code==='not_granted'?'AI access was declined, so this uses the built-in ranking.':'The AI could not be reached, so this uses the built-in ranking.'}
+  }else advice='AI is not available in this view, so this uses the built-in ranking.';
+  if(!order){
+    const sc=t=>({today:3,week:1.5,none:0}[t.due])+({high:3,med:2,low:1}[t.imp])+(t.mins<=20?.5:0);
+    order=open.slice().sort((a,b)=>sc(b)-sc(a)).map(t=>({id:t.id,why:'Ranked by deadline and importance.',minutes:Math.min(120,t.mins)}));
+  }
+  tplan={items:tkPlace(order),advice,src};renderTasks();
+}
+function tkSchedule(){
+  const now=new Date();
+  tplan.items.filter(o=>!o.unplaced).forEach((o,i)=>{const t=S.tasks.find(x=>x.id===o.id);if(t)S.blocks.push({id:'a'+Date.now()+i,title:t.title,start:o.start,end:o.end,days:[now.getDay()],date:key(now)})});
+  tplan.done=true;render();renderTasks();
+}
+$('trun').onclick=tkRun;
+$('fstart').onclick=fcStart;
+$('ftask').onchange=e=>{const t=S.tasks.find(x=>x.id===e.target.value);if(t){$('ftitle').value=t.title;$('fdur').value=Math.min(120,t.mins)}};
+$('fnudge').checked=S.nudge!==false;$('fnudge').onchange=e=>{S.nudge=e.target.checked;save()};
+
+/* leave detection + guards */
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)fcLeave();else{fcBack();try{if(S.session&&navigator.wakeLock)navigator.wakeLock.request('screen').then(x=>wl=x).catch(()=>{})}catch(e){}}
+});
+window.addEventListener('blur',fcLeave);window.addEventListener('focus',fcBack);
+window.addEventListener('beforeunload',e=>{if(S.session){e.preventDefault();e.returnValue=''}});
+(function(){const s=S.session;if(!s)return;const n=Date.now();if(!s.app){const gone=s.hid?n-s.hid:(s.seen?n-s.seen:0);if(gone>20000)fcViolate('You were away from the page for '+fmtS(gone/1000)+'.')}s.hid=0})();
+(window.claude&&claude.use?claude.use('sample'):Promise.resolve(null)).then(x=>{AI=x}).catch(()=>{});
+renderApps();renderTasks();focusTick();setInterval(focusTick,1000);
+
+/* ---------- Fixed events + focus areas wizard, reminders, goals & rewards ---------- */
+const FX=[['School or college','08:00','14:00',[1,2,3,4,5]],['Tuition or coaching','17:00','18:30',[1,3,5]],['Work','09:00','17:00',[1,2,3,4,5]],['Commute','07:30','08:00',[1,2,3,4,5]],['Sports or club practice','17:00','18:00',[2,4]],['Family meals','20:00','20:45',[0,1,2,3,4,5,6]],['Something else','10:00','11:00',[1,2,3,4,5]]];
+const AR=[['Gym or workout',60,'evening',[1,2,3,4,5]],['Study or revision',90,'morning',[1,2,3,4,5]],['Reading',30,'evening',[0,1,2,3,4,5,6]],['Meditation',15,'morning',[0,1,2,3,4,5,6]],['Hobby or skill',45,'evening',[0,3,6]],['Walk or outdoors',30,'evening',[0,1,2,3,4,5,6]],['Language practice',30,'morning',[0,1,2,3,4,5,6]],['Coding or side project',60,'afternoon',[1,3,5]]];
+let wz={stage:'fxpick',sel:[],i:0},wzV=null,wzErr='',wzNote='';
+function fitBlock(b){
+  const d=m(b.end)-m(b.start),s0=m(b.start),ok=s=>!clash({days:b.days,start:f(s),end:f(s+d)});
+  if(ok(s0))return{...b};
+  for(let k=15;k<=720;k+=15)for(const s of[s0+k,s0-k])if(s>=360&&s+d<=1380&&ok(s))return{...b,start:f(s),end:f(s+d)};
+  return null;
+}
+function wzStart(st){wz={stage:st,sel:[],i:0};wzV=null;wzErr='';wzNote='';svMode='wz';renderSV()}
+function wzTog(i){const k=wz.sel.indexOf(i);if(k<0)wz.sel.push(i);else wz.sel.splice(k,1);renderSV()}
+function wzNext(){
+  wzErr='';wzV=null;
+  if(wz.stage==='fxpick'){if(wz.sel.length){wz.stage='fxform';wz.i=0}else{wz.stage='arpick';wz.sel=[]}}
+  else if(wz.stage==='arpick'){if(wz.sel.length){wz.stage='arform';wz.i=0}else return wzDone()}
+  renderSV();
+}
+function wzAdvance(){
+  wz.i++;wzErr='';wzV=null;
+  if(wz.i>=wz.sel.length){if(wz.stage==='fxform'){wz.stage='arpick';wz.sel=[];wz.i=0}else return wzDone()}
+  renderSV();
+}
+function wzDone(){svMode='result';wzErr='';if(wzNote)toast(wzNote);wzNote='';render();renderSV()}
+const wzDays=()=>[...document.querySelectorAll('#wzd input:checked')].map(x=>+x.value);
+function wzSaveFx(){
+  const it=FX[wz.sel[wz.i]],t=$('wt').value.trim()||it[0],s=$('ws').value,e=$('we').value,d=wzDays();
+  wzV={t,s,e,d};
+  if(!s||!e||m(e)<=m(s)){wzErr='End time must be after start time.';return renderSV()}
+  if(!d.length){wzErr='Pick at least one day.';return renderSV()}
+  const c=clash({days:d,start:s,end:e});
+  if(c){wzErr='Overlaps with “'+c.title+'” ('+c.start+'–'+c.end+').';return renderSV()}
+  S.blocks.push({id:'x'+Date.now(),title:t.slice(0,60),start:s,end:e,days:d,fixed:true});
+  wzNote=t+' saved. Your plan will work around it.';save();render();wzAdvance();
+}
+function wzSaveAr(){
+  const it=AR[wz.sel[wz.i]],t=$('wt').value.trim()||it[0],mins=Math.max(10,Math.min(240,+$('wm').value||it[1])),p=$('wp').value,d=wzDays();
+  wzV={t,m:mins,p,d};
+  if(!d.length){wzErr='Pick at least one day.';return renderSV()}
+  const ps={morning:390,afternoon:900,evening:1080,night:1230}[p],r=fitBlock({days:d,start:f(ps),end:f(ps+mins)});
+  if(!r){wzErr='No free '+mins+'-minute slot on those days. Try fewer minutes or other days.';return renderSV()}
+  S.blocks.push({id:'g'+Date.now(),title:t.slice(0,60),start:r.start,end:r.end,days:d,area:true});
+  wzNote=t+' placed at '+r.start+'–'+r.end+'.';save();render();wzAdvance();
+}
+function wzHtml(){
+  const days=sel=>DN.map((d,i)=>`<label><input type="checkbox" value="${i}" ${sel.includes(i)?'checked':''}><span>${d[0]}</span></label>`).join('');
+  const top=l=>`<div class="row" style="justify-content:space-between"><span class="sub">${l}</span><button class="ghost" onclick="svMode='home';renderSV()">Close</button></div>`;
+  const note=(wzNote?`<div class="msg" style="margin:8px 0">${esc(wzNote)}</div>`:'')+(wzErr?`<div class="msg warn" style="margin:8px 0">${esc(wzErr)}</div>`:'');
+  const v=wzV||{};
+  if(wz.stage==='fxpick'||wz.stage==='arpick'){
+    const fx=wz.stage==='fxpick',L=fx?FX:AR;
+    return top(fx?'Fixed events':'Focus areas')+`<h2 style="font-size:1.25rem;margin:10px 0 4px">${fx?'Which fixed commitments do you have?':'What do you want to make time for?'}</h2><div class="sub" style="margin-bottom:10px">${fx?'Things that happen at set times. Your plan works around them.':'Pick as many as you like. Each gets a slot in your day.'}</div>${note}<div class="row">${L.map((x,i)=>`<button class="chip${wz.sel.includes(i)?' sel':''}" onclick="wzTog(${i})">${x[0]}</button>`).join('')}</div><div class="row" style="margin-top:14px"><button class="pri" onclick="wzNext()">${wz.sel.length?'Continue':(fx?'None of these':'Skip')}</button></div>`;
+  }
+  if(wz.stage==='fxform'){
+    const it=FX[wz.sel[wz.i]];
+    return top(`Fixed events · ${wz.i+1} of ${wz.sel.length}`)+`<h2 style="font-size:1.25rem;margin:10px 0 8px">${it[0]}: when is it?</h2>${note}<input type="text" id="wt" value="${esc(v.t||it[0])}" aria-label="Name" style="width:100%;margin-bottom:8px"><div class="row" style="margin-bottom:10px"><input type="time" id="ws" value="${v.s||it[1]}" aria-label="Start time"><span class="sub">to</span><input type="time" id="we" value="${v.e||it[2]}" aria-label="End time"></div><div class="row days" id="wzd">${days(v.d||it[3])}</div><div class="row" style="margin-top:14px"><button class="pri" onclick="wzSaveFx()">Save and continue</button><button class="ghost" onclick="wzAdvance()">Skip</button></div>`;
+  }
+  const it=AR[wz.sel[wz.i]];
+  return top(`Focus areas · ${wz.i+1} of ${wz.sel.length}`)+`<h2 style="font-size:1.25rem;margin:10px 0 8px">${it[0]}: how much and when?</h2>${note}<input type="text" id="wt" value="${esc(v.t||it[0])}" aria-label="Name" style="width:100%;margin-bottom:8px"><div class="row" style="margin-bottom:10px"><input type="number" id="wm" value="${v.m||it[1]}" min="10" max="240" style="width:84px" aria-label="Minutes"><span class="sub">minutes, best in the</span><select id="wp" aria-label="Preferred time of day">${[['morning','morning'],['afternoon','afternoon'],['evening','evening'],['night','night']].map(o=>`<option value="${o[0]}" ${(v.p||it[2])===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div><div class="row days" id="wzd">${days(v.d||it[3])}</div><div class="row" style="margin-top:14px"><button class="pri" onclick="wzSaveAr()">Place it in my day</button><button class="ghost" onclick="wzAdvance()">Skip</button></div>`;
+}
+
+/* toast */
+function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{e.hidden=true},3800)}
+
+/* tabs */
+function showTab(n){['plan','rem','goals','safe'].forEach(x=>{$('tab-'+x).hidden=x!==n;$('tb-'+x).setAttribute('aria-selected',x===n)});if(n==='goals'){renderGoals();renderWeek()}if(n==='safe')renderGal();if(n==='rem')renderRem()}
+
+/* procrastination reminders (max 3) */
+function renderRem(){
+  const open=S.rem.filter(r=>!r.done);
+  $('remcap').style.width=(open.length/3*100)+'%';
+  $('remslots').textContent=open.length+' of 3 slots used · '+(S.remDone||0)+' finished so far';
+  $('rlist').innerHTML=open.length?open.map(r=>`<div class="slot"><div class="name">${esc(r.title)}<div class="sub">Reminds from ${r.at}, every ${r.every} min until done</div></div><div class="row"><button onclick="remStart('${r.id}')">Start 5 min</button><button class="ok" onclick="remDone('${r.id}')">Done</button><button class="ghost" onclick="remDrop('${r.id}')">Drop</button></div></div>`).join(''):'<div class="sub">Nothing here. Add the task you keep avoiding.</div>';
+}
+$('radd').onclick=()=>{
+  const open=S.rem.filter(r=>!r.done),t=$('rt').value.trim();
+  if(open.length>=3){$('rerr').textContent='You already have 3. Finish or drop one first.';return}
+  if(!t){$('rerr').textContent='Describe the task first.';return}
+  $('rerr').textContent='';
+  S.rem.push({id:'r'+Date.now(),title:t.slice(0,100),at:$('ra').value||'09:00',every:+$('re').value,done:false,last:0,snooze:0,live:false});
+  $('rt').value='';renderRem();save();
+};
+function remDone(id){const r=S.rem.find(x=>x.id===id);if(!r||r.done)return;needProof(r.title,()=>remDoneNow(id))}
+function remDoneNow(id){const r=S.rem.find(x=>x.id===id);if(!r||r.done)return;S.lastActive=Date.now();r.done=true;r.live=false;S.remDone=(S.remDone||0)+1;save();toast('Finished: +15 XP, +10 coins');renderRem();renderSC();remBanner(true)}
+function remDrop(id){S.rem=S.rem.filter(x=>x.id!==id);save();renderRem();remBanner(true)}
+function remSnooze(id){const r=S.rem.find(x=>x.id===id);if(!r)return;r.live=false;r.last=0;r.snooze=Date.now()+600000;save();remBanner(true)}
+function remStart(id){const r=S.rem.find(x=>x.id===id);if(!r)return;r.live=false;r.last=Date.now();save();remBanner(true);startFocus(r.title,5,{taskId:'rem:'+id})}
+function remBanner(force){
+  const r=S.rem.find(x=>!x.done&&x.live),el=$('remB');
+  if(!r||S.session){el.hidden=true;el.dataset.sig='';return}
+  el.hidden=false;
+  if(force||el.dataset.sig!==r.id){el.dataset.sig=r.id;el.innerHTML=`<div><b>Stop putting this off:</b> ${esc(r.title)}</div><div class="row"><button class="ok" onclick="remStart('${r.id}')">Start 5 minutes</button><button onclick="remDone('${r.id}')">Done</button><button class="ghost" onclick="remSnooze('${r.id}')">Snooze 10 min</button></div>`}
+}
+function remTick(){
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes(),t=Date.now();let ch=false;
+  S.rem.forEach(r=>{if(r.done)return;if(nm>=m(r.at)&&t>=(r.snooze||0)&&t-(r.last||0)>=r.every*60000){r.last=t;r.live=true;ch=true;ping('Stop putting this off: '+r.title,'Start with just 5 minutes.')}});
+  if(ch)save();
+  remBanner();
+}
+
+/* goals, rank, rewards */
+function rankOf(lv){const R=[[1,'Rookie'],[3,'Apprentice'],[5,'Challenger'],[7,'Disciplined'],[10,'Steadfast'],[14,'Master'],[20,'Legend']];let r='Rookie';R.forEach(x=>{if(lv>=x[0])r=x[1]});return r}
+function gStats(){
+  let done=0,res=0;
+  Object.values(S.log).forEach(d=>Object.values(d).forEach(x=>{if(x&&x.s==='done')done++}));
+  Object.values(S.urges).forEach(n=>res+=n);
+  const xp=Math.max(0,done*10+res*5+(S.focus.min||0)-(S.focus.viol||0)*10-(S.focus.broken||0)*15+(S.remDone||0)*15+(S.goalsDone||0)*100);
+  const earned=done*5+res*3+Math.floor((S.focus.min||0)/5)+(S.remDone||0)*10+(S.goalsDone||0)*50;
+  return{done,res,xp,lv:Math.floor(Math.sqrt(xp/20))+1,coins:Math.max(0,earned-(S.spent||0))};
+}
+function renderGoals(){
+  const st=gStats(),hi=20*st.lv*st.lv,lo=20*(st.lv-1)*(st.lv-1),streak=+$('streak').textContent||0;
+  $('gRank').innerHTML=`<div class="lvl"><b>${rankOf(st.lv)}</b><span class="sub">Level ${st.lv} · ${st.xp} XP · ${hi-st.xp} to level ${st.lv+1}</span></div><div class="bar"><i style="width:${(st.xp-lo)/(hi-lo)*100}%"></i></div><div class="stats"><div class="stat"><b>${st.coins}</b><span class="sub">coins to spend</span></div><div class="stat"><b>${streak}</b><span class="sub">day streak</span></div><div class="stat"><b>${S.goalsDone||0}</b><span class="sub">goals reached</span></div></div>`;
+  const B=[['First block done',st.done>=1],['10 blocks done',st.done>=10],['3-day streak',streak>=3],['7-day streak',streak>=7],['100 focus minutes',(S.focus.min||0)>=100],['10 urges resisted',st.res>=10],['Beat procrastination',(S.remDone||0)>=1],['First goal reached',(S.goalsDone||0)>=1]];
+  $('gBadges').innerHTML=B.map(b=>`<span class="tag ${b[1]?'done':'up'}" style="${b[1]?'':'opacity:.55'}">${b[1]?'':'Locked: '}${b[0]}</span>`).join('');
+  $('glist').innerHTML=S.goals.length?S.goals.map(g=>{
+    const n=g.steps.filter(x=>x.done).length,all=n===g.steps.length;
+    return`<div class="card" style="margin:10px 0 0;background:var(--bg)"><div class="row" style="justify-content:space-between"><b>${esc(g.title)}</b><button class="ghost" onclick="goalDel('${g.id}')" aria-label="Delete goal">✕</button></div><div class="sub">${g.due?'By '+esc(g.due)+' · ':''}Reward: ${esc(g.reward||'none set')}</div><div class="bar"><i style="width:${n/g.steps.length*100}%"></i></div>${g.steps.map((s,i)=>`<label class="row" style="margin:4px 0"><input type="checkbox" ${s.done?'checked':''} ${g.claimed?'disabled':''} onchange="goalStep('${g.id}',${i})"><span>${esc(s.t)}</span></label>`).join('')}${g.claimed?'<span class="tag done">Reward claimed</span>':all?`<button class="ok" onclick="goalClaim('${g.id}')">Claim reward (+100 XP, +50 coins)</button>`:`<div class="sub">${g.steps.length-n} step${g.steps.length-n>1?'s':''} to go</div>`}</div>`}).join(''):'<div class="sub" style="margin-top:8px">No goals yet. Think months, not days: a rank, an exam, a habit.</div>';
+  $('shop').innerHTML=S.rewards.length?S.rewards.map(r=>`<div class="slot"><div class="name">${esc(r.title)}<div class="sub">${r.cost} coins${r.n?' · redeemed '+r.n+'×':''}</div></div><button ${st.coins>=r.cost?'class="pri"':'disabled'} onclick="redeem('${r.id}')">Redeem</button><button class="ghost" onclick="rwDel('${r.id}')" aria-label="Delete reward">✕</button></div>`).join(''):'<div class="sub">Add a reward you actually want, like “Watch an episode” for 30 coins.</div>';
+}
+$('gadd').onclick=()=>{
+  const t=$('gt').value.trim();if(!t){$('gerr').textContent='Name your goal first.';return}
+  $('gerr').textContent='';
+  const steps=$('gs').value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,10).map(x=>({t:x.slice(0,80),done:false}));
+  S.goals.push({id:'q'+Date.now(),title:t.slice(0,100),due:$('gd').value,reward:$('gr').value.trim().slice(0,100),steps:steps.length?steps:[{t:t.slice(0,80),done:false}],claimed:false});
+  ['gt','gd','gr','gs'].forEach(i=>$(i).value='');save();renderGoals();
+};
+function goalStep(id,i){const g=S.goals.find(x=>x.id===id);if(g&&!g.claimed)g.steps[i].done=!g.steps[i].done;save();renderGoals()}
+function goalClaim(id){const g=S.goals.find(x=>x.id===id);if(!g||g.claimed)return;needProof('Goal: '+g.title,()=>goalClaimNow(id))}
+function goalClaimNow(id){const g=S.goals.find(x=>x.id===id);if(!g||g.claimed)return;S.lastActive=Date.now();g.claimed=true;S.goalsDone=(S.goalsDone||0)+1;save();toast('Goal reached! Enjoy your reward'+(g.reward?': '+g.reward:'')+'. +100 XP, +50 coins');renderGoals();renderSC()}
+function goalDel(id){S.goals=S.goals.filter(x=>x.id!==id);save();renderGoals()}
+$('radd2').onclick=()=>{
+  const t=$('rwt').value.trim(),c=Math.max(1,Math.min(5000,Math.round(+$('rwc').value||0)));
+  if(!t||!c)return;S.rewards.push({id:'w'+Date.now(),title:t.slice(0,80),cost:c,n:0});$('rwt').value='';save();renderGoals();
+};
+function redeem(id){const r=S.rewards.find(x=>x.id===id);if(!r||gStats().coins<r.cost)return;S.spent=(S.spent||0)+r.cost;r.n=(r.n||0)+1;save();toast('Redeemed: '+r.title+'. You earned it.');renderGoals()}
+function rwDel(id){S.rewards=S.rewards.filter(x=>x.id!==id);save();renderGoals()}
+
+renderRem();setInterval(remTick,1000);remTick();
+
+/* ---------- Proof of completion, partner approval, backup, weekly review, install ---------- */
+let pfCb=null,pfT='',pfStream=null,pfNonce='',pfReq='',editId=null,instEv=null;
+const b64u=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64u=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+const tb=s=>new TextEncoder().encode(s);
+function needProof(title,cb){if(S.proof==='off'){cb();return}pfCb=cb;pfT=title;pfShow()}
+function pfDone(){const cb=pfCb;pfCb=null;pfClose();if(cb)cb()}
+function pfClose(){pfStop();$('proof').hidden=true;$('proof').innerHTML='';document.body.style.overflow=''}
+function pfStop(){if(pfStream){pfStream.getTracks().forEach(t=>t.stop());pfStream=null}}
+function pfErr(t){const e=$('pfe');if(e)e.textContent=t}
+function pfShow(){
+  const p=S.partner,ph=S.proof!=='partner',pa=S.proof!=='photo';
+  $('proof').hidden=false;document.body.style.overflow='hidden';
+  $('proof').innerHTML=`<div class="lk"><div class="lsub">Proof needed</div><h2 class="lh">${esc(pfT)}</h2><div id="pfbody"><p class="lsub">${S.proof==='photo'?'Take a live photo of the finished work.':S.proof==='partner'?'Your partner must approve this.':'Take a live photo, or get your partner to approve.'}</p><div class="row" style="justify-content:center">${ph?'<button class="go" onclick="pfCam()">Take photo</button>':''}${pa?`<button class="go" onclick="pfAsk()">Ask ${esc(p.name||'my partner')}</button>`:''}</div><div class="warn" id="pfe" style="margin-top:10px"></div></div><button class="lghost" onclick="pfCb=null;pfClose()">Cancel</button></div>`;
+}
+function shrink(src,w,h,max){const r=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.round(w*r);c.height=Math.round(h*r);c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c}
+async function pfCam(){
+  try{pfStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})}catch(e){return pfFile()}
+  $('pfbody').innerHTML='<video id="pfv" autoplay playsinline muted style="width:100%;border-radius:12px"></video><div class="row" style="margin-top:10px;justify-content:center"><button class="go" onclick="pfSnap()">Capture</button><button onclick="pfStop();pfShow()">Back</button></div><div class="warn" id="pfe"></div>';
+  $('pfv').srcObject=pfStream;
+}
+function pfSnap(){const v=$('pfv');if(!v||!v.videoWidth)return;const c=shrink(v,v.videoWidth,v.videoHeight,640);pfStop();pfAccept(c)}
+function pfFile(){$('pfbody').innerHTML='<p class="lsub">Live camera is not available here. Use your phone camera: the photo must be taken within the last 10 minutes.</p><input type="file" id="pff" accept="image/*" capture="environment" onchange="pfPicked(this.files[0])"><div class="warn" id="pfe"></div><div class="row" style="justify-content:center"><button onclick="pfShow()">Back</button></div>'}
+async function pfPicked(f0){
+  if(!f0)return;
+  if(Date.now()-f0.lastModified>600000)return pfErr('That photo is older than 10 minutes. Take a fresh one.');
+  try{const bm=await createImageBitmap(f0);pfAccept(shrink(bm,bm.width,bm.height,640))}catch(e){pfErr('Could not read that image.')}
+}
+function aHash(cv){const c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d');x.drawImage(cv,0,0,8,8);const d=x.getImageData(0,0,8,8).data,g=[];for(let i=0;i<64;i++)g.push(d[i*4]*.3+d[i*4+1]*.6+d[i*4+2]*.1);const mean=g.reduce((a,b)=>a+b)/64;return g.map(v=>v>mean?1:0).join('')}
+const ham=(a,b)=>{let n=0;for(let i=0;i<64;i++)if(a[i]!==b[i])n++;return n};
+function pfAccept(cv){
+  const h=aHash(cv);
+  if(S.proofs.some(p=>p.h&&ham(p.h,h)<=5)){pfShow();pfErr('This looks like a photo you already used. Take a new one.');return}
+  S.proofs.push({t:pfT,ts:Date.now(),h,img:shrink(cv,cv.width,cv.height,200).toDataURL('image/jpeg',.6)});
+  S.proofs=S.proofs.slice(-40);save();renderGal();pfDone();
+}
+function pfAsk(){
+  const p=S.partner;
+  if(!p.pub||!(p.email||p.phone))return pfErr('Add your partner and their pairing code in Safeguards first.');
+  if(!(window.crypto&&crypto.subtle))return pfErr('Approvals need a secure (https) page.');
+  pfNonce=[...crypto.getRandomValues(new Uint8Array(6))].map(x=>x.toString(16).padStart(2,'0')).join('');
+  pfReq='SK1.'+b64u(tb(JSON.stringify({t:pfT,n:pfNonce,ts:Date.now()})));
+  const body=`Hi ${p.name||''}, I'm saying I finished "${pfT}". If that's true, open StickTo, go to Safeguards, paste this into "I'm the approver", and send me back the approval code.\n\n${pfReq}`,q=encodeURIComponent;
+  $('pfbody').innerHTML=`<p class="lsub">Send this request to ${esc(p.name||'your partner')}, then paste the code they send back.</p><div class="row" style="justify-content:center">${p.email?`<a class="go abtn" href="mailto:${esc(p.email)}?subject=${q('Approve: '+pfT)}&body=${q(body)}">Email</a>`:''}${p.phone?`<a class="go abtn" href="sms:${esc(p.phone)}?&body=${q(body)}">SMS</a>`:''}<button onclick="navigator.clipboard&&navigator.clipboard.writeText(decodeURIComponent('${q(body)}')).then(()=>pfErr('Copied.'))">Copy</button></div><input type="text" id="pfr" placeholder="Paste approval code here" aria-label="Approval code"><div class="warn" id="pfe"></div><div class="row" style="justify-content:center"><button class="go" onclick="pfVerify()">Verify</button><button onclick="pfShow()">Back</button></div>`;
+}
+async function pfVerify(){
+  const v=$('pfr').value.trim().split('.');
+  try{
+    if(v[0]!=='SKA'||v[1]!==pfNonce||S.nonces.includes(v[1]))throw 0;
+    const pub=JSON.parse(S.partner.pub),k=await crypto.subtle.importKey('jwk',{kty:'EC',crv:'P-256',x:pub.x,y:pub.y,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+    if(!await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},k,unb64u(v[2]),tb(pfReq)))throw 0;
+    S.nonces=[...S.nonces,v[1]].slice(-200);S.proofs.push({t:pfT,ts:Date.now(),by:S.partner.name||'partner'});S.proofs=S.proofs.slice(-40);save();renderGal();pfDone();
+  }catch(e){pfErr('That code is not valid for this request.')}
+}
+/* approver tools (used on the partner's own device) */
+async function apKey(){
+  const kp=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']),j=await crypto.subtle.exportKey('jwk',kp.privateKey);
+  try{localStorage.setItem('stickto_ap',JSON.stringify(j))}catch(e){}apShow();
+}
+function apShow(){try{const j=JSON.parse(localStorage.getItem('stickto_ap'));if(j)$('appub').value='SKP.'+b64u(tb(JSON.stringify({x:j.x,y:j.y})))}catch(e){}}
+function apReview(){
+  try{const o=JSON.parse(new TextDecoder().decode(unb64u($('apreq').value.trim().split('.')[1])));
+    $('apinfo').innerHTML=`<div class="msg">They say they finished: <b>${esc(String(o.t))}</b><div class="sub">Approve only if you have seen it yourself.</div></div><button class="pri" onclick="apSign()">Approve</button>`;
+  }catch(e){$('apinfo').innerHTML='<div class="msg warn">That is not a valid request.</div>'}
+}
+async function apSign(){
+  try{const req=$('apreq').value.trim(),o=JSON.parse(new TextDecoder().decode(unb64u(req.split('.')[1])));
+    const k=await crypto.subtle.importKey('jwk',JSON.parse(localStorage.getItem('stickto_ap')),{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
+    const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},k,tb(req));
+    $('apinfo').innerHTML=`<div class="msg">Send this code back to them:</div><input type="text" readonly value="SKA.${o.n}.${b64u(sig)}" onfocus="this.select()" aria-label="Approval code">`;
+  }catch(e){$('apinfo').innerHTML='<div class="msg warn">Create your approver key first, on this device.</div>'}
+}
+/* safeguards settings */
+$('pfmode').value=S.proof;$('pfmode').onchange=e=>{S.proof=e.target.value;save()};
+['pn','pe','pp'].forEach((id,i)=>{$(id).value=S.partner[['name','email','phone'][i]]||''});
+$('psave').onclick=()=>{
+  const c=$('pc').value.trim();let pub=S.partner.pub;
+  if(c){try{const o=JSON.parse(new TextDecoder().decode(unb64u(c.replace(/^SKP\./,''))));if(!o.x||!o.y)throw 0;pub=JSON.stringify({x:o.x,y:o.y})}catch(e){$('pst').textContent='That pairing code is not valid.';return}}
+  S.partner={name:$('pn').value.trim().slice(0,40),email:$('pe').value.trim(),phone:$('pp').value.trim(),pub};save();$('pc').value='';
+  $('pst').textContent=pub?'Partner saved and paired.':'Saved. Ask your partner for their pairing code.';
+};
+function renderGal(){$('pfgal').innerHTML=S.proofs.length?S.proofs.slice(-8).reverse().map(p=>p.img?`<img src="${p.img}" alt="Proof: ${esc(p.t)}" title="${esc(p.t)}" style="width:68px;height:68px;object-fit:cover;border-radius:8px">`:`<span class="tag done">Approved by ${esc(p.by||'partner')}: ${esc(p.t)}</span>`).join(''):'<span class="sub">No proofs yet.</span>'}
+$('bkx').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='stickto-backup.json';a.click()};
+$('bki').onchange=e=>{const f0=e.target.files[0];if(!f0)return;f0.text().then(t=>{const j=JSON.parse(t);if(!Array.isArray(j.blocks))throw 0;Object.assign(S,j);save();location.reload()}).catch(()=>toast('That file is not a StickTo backup.'))};
+/* editing blocks */
+function editBlock(id){
+  const b=S.blocks.find(x=>x.id===id);if(!b)return;editId=id;showTab('plan');
+  $('title').value=b.title;$('start').value=b.start;$('end').value=b.end;
+  document.querySelectorAll('#days input').forEach(x=>{x.checked=b.days.includes(+x.value)});
+  $('add').textContent='Save changes';$('title').scrollIntoView({block:'center'});$('title').focus();
+}
+/* weekly review */
+function renderWeek(){
+  const now=new Date(),rows=[];let fm=0;
+  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);fm+=S.fl[key(d)]||0;rows.push({n:DN[d.getDay()],r:rate(d)})}
+  const sc=rows.filter(x=>x.r!==null),srt=sc.slice().sort((a,b)=>b.r-a.r);
+  const bands={morning:[],afternoon:[],evening:[]};
+  Object.values(S.checks).flat().forEach(c=>{const v={low:1,ok:2,high:3}[c.e];if(v)(c.t<720?bands.morning:c.t<1020?bands.afternoon:bands.evening).push(v)});
+  const av=a=>a.reduce((x,y)=>x+y,0)/a.length,eb=Object.entries(bands).filter(x=>x[1].length>=2).sort((a,b)=>av(b[1])-av(a[1]))[0];
+  $('weekly').innerHTML=`<div class="week">${rows.map(x=>`<div><i style="height:${x.r===null?3:Math.max(3,x.r*60)}px;opacity:${x.r===null?.3:1}"></i>${x.n[0]}</div>`).join('')}</div><div class="msg"><div>Focus time this week: <b>${fm} min</b></div>${srt.length?`<div>Best day: <b>${srt[0].n}</b> (${Math.round(srt[0].r*100)}%). Weakest: <b>${srt[srt.length-1].n}</b> (${Math.round(srt[srt.length-1].r*100)}%).</div>`:'<div>Finish a few blocks to see your best and weakest days.</div>'}${eb?`<div>You report the most energy in the <b>${eb[0]}</b>. Put your hardest block there.</div>`:'<div>Do a few check-ins to find your real best time of day.</div>'}</div>`;
+}
+/* install */
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('install').hidden=false});
+$('install').onclick=()=>{if(instEv){instEv.prompt();instEv=null;$('install').hidden=true}};
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&document.querySelector('link[rel=manifest]'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+renderGal();apShow();
+
+/* ---------- Account, cloud sync, push notifications (needs the StickTo server) ---------- */
+var ACC={tok:'',user:null,off:false},syncT=0;
+try{ACC.tok=localStorage.getItem('stickto_tok')||''}catch(e){}
+async function api(p,o){
+  o=o||{};const r=await fetch(p,{...o,headers:{'Content-Type':'application/json',...(ACC.tok?{Authorization:'Bearer '+ACC.tok}:{})}});
+  let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error||'Request failed');return j;
+}
+function accView(){$('accOff').hidden=!ACC.off;$('accIn').hidden=ACC.off||!!ACC.user;$('accOn').hidden=!ACC.user}
+function summary(){
+  const st=gStats(),now=new Date(),k=key(now),bl=forDay(now).filter(b=>!b.fixed);
+  return{xp:st.xp,lv:st.lv,streak:+$('streak').textContent||0,todayDone:bl.filter(b=>((S.log[k]||{})[b.id]||{}).s==='done').length,todayTotal:bl.length,focusMin:S.fl[k]||0,lastActive:S.lastActive||0};
+}
+function syncSoon(){if(!ACC||!ACC.user)return;clearTimeout(syncT);syncT=setTimeout(doSync,4000)}
+async function doSync(){
+  if(!ACC.user)return;
+  try{const st=JSON.parse(JSON.stringify(S));st.proofs=(st.proofs||[]).map(p=>({t:p.t,ts:p.ts}));st.session=null;
+    await api('/api/sync',{method:'POST',body:JSON.stringify({state:st,summary:summary(),updatedAt:S.updatedAt||Date.now()})});
+    $('asm').textContent='Synced '+new Date().toLocaleTimeString()}catch(e){$('asm').textContent='Sync failed. Will retry.'}
+}
+async function accAuth(kind){
+  const b={email:$('ae').value.trim(),password:$('ap').value,name:$('an').value.trim(),consent:$('ac').checked,tzo:-new Date().getTimezoneOffset()};
+  if(kind==='register'&&!b.consent){$('aerr').textContent='Please tick the consent box.';return}
+  try{const r=await api('/api/'+kind,{method:'POST',body:JSON.stringify(b)});
+    ACC.tok=r.token;try{localStorage.setItem('stickto_tok',r.token)}catch(e){}
+    ACC.user=r.user;$('ap').value='';$('aerr').textContent='';accView();afterLogin();
+  }catch(e){$('aerr').textContent=e.message}
+}
+async function afterLogin(){
+  $('ahi').textContent='Signed in as '+ACC.user.name+' ('+ACC.user.email+')';
+  $('abd').checked=!!ACC.user.board;$('art').value=ACC.user.remindAt||'19:00';
+  api('/api/prefs',{method:'POST',body:JSON.stringify({tzo:-new Date().getTimezoneOffset()})}).catch(()=>{});
+  try{const r=await api('/api/state'),empty=!S.blocks.length&&!S.tasks.length&&!S.goals.length&&!S.survey;
+    if(r.state&&(empty||r.updatedAt>(S.updatedAt||0))){try{localStorage.setItem('stickto',JSON.stringify({...r.state,updatedAt:r.updatedAt}))}catch(e){}location.reload();return}}catch(e){}
+  doSync();loadBoard();
+}
+async function loadBoard(){
+  try{const r=await api('/api/board');$('board').innerHTML=r.board.length?'<h2 style="font-size:.95rem;margin-top:14px">Leaderboard</h2>'+r.board.map((u,i)=>`<div class="ifrow"><span>${i+1}. ${esc(u.name)}</span><span class="sub">Lv ${u.lv} · ${u.xp} XP · ${u.streak} day streak</span></div>`).join(''):'<div class="sub" style="margin-top:10px">No one has joined the leaderboard yet.</div>'}catch(e){}
+}
+async function pushOn(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return toast('Push is not supported here. On iPhone, install the app to the Home Screen first.');
+  try{
+    if(await Notification.requestPermission()!=='granted')return toast('Notifications were blocked in your browser settings.');
+    const reg=await navigator.serviceWorker.ready,k=await api('/api/vapid');
+    if(!k.key)return toast('The server has no push keys yet. Run npm install on the server.');
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:unb64u(k.key)});
+    await api('/api/push',{method:'POST',body:JSON.stringify({sub:sub.toJSON()})});toast('Notifications are on.');
+  }catch(e){toast('Could not turn on notifications.')}
+}
+$('asu').onclick=()=>accAuth('register');$('ali').onclick=()=>accAuth('login');
+$('apush').onclick=pushOn;$('asy').onclick=doSync;
+$('art').onchange=e=>api('/api/prefs',{method:'POST',body:JSON.stringify({remindAt:e.target.value})}).then(()=>toast('Reminder time saved.')).catch(()=>{});
+$('abd').onchange=e=>api('/api/prefs',{method:'POST',body:JSON.stringify({board:e.target.checked})}).then(loadBoard).catch(()=>{});
+$('alo').onclick=()=>{ACC.tok='';ACC.user=null;try{localStorage.removeItem('stickto_tok')}catch(e){}accView()};
+let delArm=0;
+$('ade').onclick=async()=>{
+  if(Date.now()-delArm>4000){delArm=Date.now();$('ade').textContent='Click again to delete';return}
+  try{await api('/api/push',{method:'DELETE'});await api('/api/account',{method:'DELETE'});$('alo').onclick()}catch(e){}
+  $('ade').textContent='Delete account';toast('Account deleted. Your data on this device is untouched.');
+};
+(async()=>{
+  try{await api('/api/health')}catch(e){ACC.off=true;accView();return}
+  if(ACC.tok){try{ACC.user=await api('/api/me')}catch(e){ACC.tok='';try{localStorage.removeItem('stickto_tok')}catch(_){}}}
+  accView();if(ACC.user)afterLogin();
+})();
+
+/* ---------- Tock's guide and getting-started checklist ---------- */
+const TK=[
+ {tab:'plan',t:"Hi, I'm Tock! I'll help you stick to your plan. This tour takes about 2 minutes. You can leave any time, and the Guide button at the top brings me back."},
+ {tab:'plan',sel:'#survey',t:"Step 1: take the 2-minute survey. I'll learn when you focus best, what distracts you and how you recover. Pick as many answers as fit.",btn:['Start the survey',()=>startQuiz()]},
+ {tab:'plan',sel:'#survey',t:"Step 2: tell me your fixed events (school, tuition, work) and what you want to make time for, like the gym. I'll fit your day around them.",btn:['Add fixed events',()=>wzStart('fxpick')]},
+ {tab:'plan',sel:'#slots',t:"This is today's timetable. Each block shows Upcoming, Now, Done, Missed or Skipped. Fixed events show in grey and never count against you."},
+ {tab:'plan',sel:'#title',t:"Step 3: add your own blocks here. Give it a name, a start and end time, and the days it repeats. You can edit any block later from the All blocks list."},
+ {tab:'plan',sel:'#now',t:"When a block starts, it shows up here with a countdown. Finish it and tap Mark done. Skipping makes you wait 30 seconds and give a reason. Sneaky, I know."},
+ {tab:'plan',sel:'#focuscard',t:"Step 4: Focus lock. List the apps you allow, each with a daily limit, then start a session. If you wander off without opening an allowed app, I add 2 minutes."},
+ {tab:'plan',sel:'#urge',t:"The Self-control gym is for wobbly moments. Feel like quitting? Tap the urge button and ride it out with me for 3 minutes. Urges fade, I promise."},
+ {tab:'plan',sel:'#planner',t:"Step 5: dump your tasks here. Tap Prioritize with AI and I'll order them and fit them into your free time today."},
+ {tab:'rem',sel:'#rt',t:"Step 6: the Reminders tab is for the things you keep avoiding. You can hold only 3 at a time, because a short list gets done. I'll nag you until you start."},
+ {tab:'goals',sel:'#gt',t:"Step 7: set a long-term goal with milestones and a reward you choose. Earn coins from daily wins and spend them in the Reward shop. Your rank grows as you go."},
+ {tab:'safe',sel:'#pfmode',t:"Step 8: Safeguards. Choose what proof counts as done: a live photo, or approval from a real person. No cheating, not even from me."},
+ {tab:'safe',sel:'#pn',t:"Add an accountability partner here. They approve by email or SMS, and their approval can't be faked or reused. They set up their side under I'm the approver."},
+ {tab:'safe',sel:'#acc',t:"Step 9: make an account to sync across your devices and get my reminders. Turn on notifications and pick the time you'd like me to nudge you."},
+ {tab:'plan',t:"That's the tour! Install me on your phone or computer with the Install button (on iPhone: Share, then Add to Home Screen). One block today is all it takes. Let's go!"}
+];
+var tkI=0;
+function tockSvg(){return'<svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" style="flex:none"><path d="M24 6l5 9M40 6l-5 9" stroke="#2f5bea" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="36" r="24" fill="#2f5bea"/><circle cx="32" cy="36" r="18" fill="#fff"/><circle cx="25" cy="31" r="3" fill="#14213d"/><circle cx="39" cy="31" r="3" fill="#14213d"/><path d="M28 38h8l-4 7z" fill="#f0a020"/><path d="M25 58l-3 5M39 58l3 5" stroke="#f0a020" stroke-width="3" stroke-linecap="round"/></svg>'}
+function clearHl(){document.querySelectorAll('.tk-hl').forEach(e=>e.classList.remove('tk-hl'))}
+function tourOpen(i){tkI=i||0;$('tock').hidden=false;tourShow()}
+function tourShow(){
+  const s=TK[tkI],last=tkI===TK.length-1;
+  showTab(s.tab);clearHl();
+  const el=s.sel?document.querySelector(s.sel):null,box=el?(el.closest('.card')||el):null;
+  if(box){box.classList.add('tk-hl');box.scrollIntoView({behavior:'smooth',block:'start'})}else window.scrollTo({top:0,behavior:'smooth'});
+  $('tock').innerHTML=`${tockSvg()}<div style="flex:1;min-width:0"><div class="sub">Tock · ${tkI+1} of ${TK.length}</div><div style="margin:4px 0 10px">${esc(s.t)}</div><div class="row">${s.btn?`<button class="pri" id="tkgo">${s.btn[0]}</button>`:''}<button class="${s.btn?'':'pri'}" id="tknx">${last?'Finish':'Next'}</button>${tkI?'<button id="tkbk">Back</button>':''}<button class="ghost" id="tksk">${last?'':'Skip tour'}</button></div></div>`;
+  $('tknx').onclick=()=>last?tourClose():(tkI++,tourShow());
+  if(tkI)$('tkbk').onclick=()=>{tkI--;tourShow()};
+  $('tksk').onclick=tourClose;
+  if(s.btn)$('tkgo').onclick=()=>{s.btn[1]();const b=document.querySelector(s.sel);if(b)b.scrollIntoView({behavior:'smooth',block:'start'})};
+}
+function tourClose(){$('tock').hidden=true;clearHl();S.tourSeen=true;save();renderGS()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('tock').hidden)tourClose()});
+$('tourbtn').onclick=()=>tourOpen(0);
+/* getting-started checklist */
+const GS=[
+ ['Take the survey',()=>!!S.survey,1],
+ ['Add your fixed events and focus areas',()=>S.blocks.some(b=>b.fixed||b.area),2],
+ ['Add a timetable block',()=>S.blocks.some(b=>!b.fixed&&!b.area&&!b.date),4],
+ ['Finish a focus session',()=>(S.focus.min||0)>0,6],
+ ['Add a task to the planner',()=>S.tasks.length>0,8],
+ ['Add a procrastination reminder',()=>S.rem.length>0||(S.remDone||0)>0,9],
+ ['Set a long-term goal',()=>S.goals.length>0,10],
+ ['Choose your proof rule',()=>S.proof!=='off',11],
+ ['Create an account',()=>!!(ACC&&ACC.user),13]
+];
+var gsSig='';
+function renderGS(){
+  const el=$('gstart'),items=GS.filter(x=>!(x[0]==='Create an account'&&ACC&&ACC.off)),done=items.map(x=>x[1]()),n=done.filter(Boolean).length;
+  if(S.gdone||n===items.length){if(n===items.length&&!S.gdone){S.gdone=true;save();toast('Checklist complete. Tock is very proud of you.')}el.hidden=true;return}
+  el.hidden=false;const sig=done.join('');if(sig===gsSig)return;gsSig=sig;
+  el.innerHTML=`<div class="row" style="justify-content:space-between"><h2 style="margin:0">Getting started with Tock</h2><button class="ghost" onclick="S.gdone=true;save();renderGS()">Hide</button></div><div class="bar"><i style="width:${n/items.length*100}%"></i></div><div class="sub" style="margin-bottom:6px">${n} of ${items.length} done</div>${items.map((x,i)=>`<div class="slot"><span class="tag ${done[i]?'done':'up'}" style="width:62px;text-align:center">${done[i]?'Done':'To do'}</span><div class="name">${x[0]}</div>${done[i]?'':`<button class="ghost" onclick="tourOpen(${x[2]})">Show me</button>`}</div>`).join('')}`;
+}
+renderGS();setInterval(renderGS,2000);
+if(!S.tourSeen)setTimeout(()=>{if(!S.tourSeen&&$('tock').hidden)tourOpen(0)},900);
+</script>
+</body>
+</html>
